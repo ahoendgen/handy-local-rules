@@ -84,7 +84,11 @@ enum Command {
     },
 
     /// Open the web dashboard in the browser
-    Dashboard,
+    Dashboard {
+        /// Browser to use (e.g., firefox, chrome, safari)
+        #[arg(short, long)]
+        browser: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -115,7 +119,7 @@ async fn main() -> anyhow::Result<()> {
         Some(Command::ListRules) => run_list_rules(&config),
         Some(Command::Status) => run_status(&config).await,
         Some(Command::Setup { force }) => run_setup(force),
-        Some(Command::Dashboard) => run_dashboard(&config),
+        Some(Command::Dashboard { browser }) => run_dashboard(&config, browser),
         None => {
             // Default: start server (backward compatible)
             run_server(config).await
@@ -243,26 +247,49 @@ fn run_list_rules(config: &Config) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run_dashboard(config: &Config) -> anyhow::Result<()> {
+fn run_dashboard(config: &Config, browser: Option<String>) -> anyhow::Result<()> {
     let url = format!("http://{}:{}", config.host, config.port);
 
     println!("Opening dashboard: {}", url);
 
-    #[cfg(target_os = "macos")]
-    {
-        std::process::Command::new("open").arg(&url).spawn()?;
-    }
+    if let Some(browser) = browser {
+        // Use specified browser
+        #[cfg(target_os = "macos")]
+        {
+            std::process::Command::new("open")
+                .args(["-a", &browser, &url])
+                .spawn()?;
+        }
 
-    #[cfg(target_os = "linux")]
-    {
-        std::process::Command::new("xdg-open").arg(&url).spawn()?;
-    }
+        #[cfg(target_os = "linux")]
+        {
+            std::process::Command::new(&browser).arg(&url).spawn()?;
+        }
 
-    #[cfg(target_os = "windows")]
-    {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", &url])
-            .spawn()?;
+        #[cfg(target_os = "windows")]
+        {
+            std::process::Command::new("cmd")
+                .args(["/C", "start", &browser, &url])
+                .spawn()?;
+        }
+    } else {
+        // Use system default browser
+        #[cfg(target_os = "macos")]
+        {
+            std::process::Command::new("open").arg(&url).spawn()?;
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            std::process::Command::new("xdg-open").arg(&url).spawn()?;
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            std::process::Command::new("cmd")
+                .args(["/C", "start", &url])
+                .spawn()?;
+        }
     }
 
     Ok(())

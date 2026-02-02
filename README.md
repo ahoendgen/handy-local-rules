@@ -322,6 +322,7 @@ handy-rules status
 
 # Open dashboard in browser
 handy-rules dashboard
+handy-rules dashboard --browser firefox
 
 # Setup (copy rules)
 handy-rules setup
