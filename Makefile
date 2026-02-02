@@ -1,7 +1,8 @@
 # Makefile for handy-local-rules
 # Common development commands
 
-.PHONY: all setup build release check fmt lint test clean run dev dev-tmux help
+.PHONY: all setup build release check fmt lint test clean run dev dev-tmux help \
+        install uninstall reinstall service-start service-stop service-status service-logs
 
 # Default target
 all: check
@@ -100,6 +101,60 @@ outdated:
 pre-commit: fmt-check lint test
 	@echo "All checks passed!"
 
+# --- macOS launchd service ---
+
+PLIST_NAME = dev.a9g.handy-local-rules
+PLIST_SRC = $(CURDIR)/$(PLIST_NAME).plist
+PLIST_DST = $(HOME)/Library/LaunchAgents/$(PLIST_NAME).plist
+BINARY_PATH = $(CURDIR)/target/release/handy-rules
+CONFIG_DIR = $(HOME)/.handy-local-rules
+
+# Install as launchd service (macOS)
+install: release
+	@echo "Installing handy-local-rules as launchd service..."
+	@mkdir -p $(CONFIG_DIR)
+	@mkdir -p $(HOME)/Library/LaunchAgents
+	@sed -e 's|__BINARY_PATH__|$(BINARY_PATH)|g' \
+	     -e 's|__CONFIG_DIR__|$(CONFIG_DIR)|g' \
+	     $(PLIST_SRC) > $(PLIST_DST)
+	@launchctl load $(PLIST_DST)
+	@echo "Installing CLI to /usr/local/bin/handy-rules..."
+	@sudo ln -sf $(BINARY_PATH) /usr/local/bin/handy-rules
+	@echo "Service installed and started!"
+	@echo "  Binary: $(BINARY_PATH)"
+	@echo "  CLI:    /usr/local/bin/handy-rules"
+	@echo "  Config: $(CONFIG_DIR)"
+	@echo "  Logs:   $(CONFIG_DIR)/handy-local-rules.log"
+
+# Uninstall launchd service
+uninstall:
+	@echo "Uninstalling handy-local-rules service..."
+	@launchctl unload $(PLIST_DST) 2>/dev/null || true
+	@rm -f $(PLIST_DST)
+	@sudo rm -f /usr/local/bin/handy-rules 2>/dev/null || true
+	@echo "Service and CLI uninstalled!"
+
+# Reinstall launchd service (rebuild + restart)
+reinstall: uninstall install
+
+# Start launchd service
+service-start:
+	@launchctl load $(PLIST_DST)
+	@echo "Service started!"
+
+# Stop launchd service
+service-stop:
+	@launchctl unload $(PLIST_DST)
+	@echo "Service stopped!"
+
+# Show service status
+service-status:
+	@launchctl list | grep $(PLIST_NAME) || echo "Service not running"
+
+# Tail service logs
+service-logs:
+	@tail -f $(CONFIG_DIR)/handy-local-rules.log
+
 # Help
 help:
 	@echo "Available targets:"
@@ -121,3 +176,12 @@ help:
 	@echo "  docs         - Generate documentation"
 	@echo "  audit        - Security audit"
 	@echo "  pre-commit   - Run pre-commit checks"
+	@echo ""
+	@echo "macOS Service:"
+	@echo "  install        - Install as launchd service (auto-start)"
+	@echo "  uninstall      - Remove launchd service"
+	@echo "  reinstall      - Rebuild and restart service"
+	@echo "  service-start  - Start service"
+	@echo "  service-stop   - Stop service"
+	@echo "  service-status - Show service status"
+	@echo "  service-logs   - Tail service logs"

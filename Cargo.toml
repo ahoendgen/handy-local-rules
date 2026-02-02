@@ -42,6 +42,9 @@ utoipa-swagger-ui = { version = "7", features = ["axum"] }
 # Home directory support
 dirs = "6"
 
+# HTTP client (for status check)
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+
 [dev-dependencies]
 tempfile = "3"
 

@@ -1,339 +1,128 @@
 # Handy Local Rules
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.85+-orange.svg)](https://www.rust-lang.org/)
 [![OpenAI Compatible](https://img.shields.io/badge/OpenAI-Compatible-green.svg)](https://platform.openai.com/docs/api-reference/chat)
 
-A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible Chat Completion API for deterministic text transformation. Designed as a post-processing backend for [Handy](https://handy.computer/) ([GitHub](https://github.com/cjpais/Handy)) and similar applications.
+A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible Chat Completion API for deterministic text transformations.
+
+## Why This Exists
+
+[Handy](https://handy.computer/) ([GitHub](https://github.com/cjpais/Handy)) is a voice-to-text application that supports post-processing transcribed text via OpenAI-compatible APIs. While you can use cloud LLMs for this, simple text transformations like converting spoken "period" to "." don't require an expensive language model.
+
+**handy-local-rules** provides a fast, offline, and free alternative. It processes text using deterministic regex rules—perfect for:
+
+- Converting spoken punctuation ("period", "comma", "new line") to symbols
+- Fixing common transcription patterns
+- Custom text normalization
+- Any application that accepts OpenAI-compatible post-processing
 
 ## Features
 
-- **OpenAI-Compatible API** — Drop-in replacement for post-processing workflows
-- **Multiple Rule Types** — Regex patterns, built-in functions, and shell commands
-- **Hot-Reload** — Rules are automatically reloaded when files change
-- **CLI Mode** — Transform text directly from the command line
-- **Dashboard UI** — Web interface to view rules and test transformations
-- **Swagger UI** — Interactive API documentation
-- **Multiple Rule Sources** — Load rules from files, directories, or glob patterns
-- **Transformation Logging** — Track all transformations via API
+- **OpenAI-Compatible API**: Drop-in replacement for post-processing workflows
+- **Rule Engine**:
+  - **Regex**: Powerful pattern-based replacements
+  - **Functions**: Built-in functions like `trim`, `uppercase`, `normalize_whitespace`
+  - **Shell**: Execute external scripts (optional, security flag required)
+- **Hot-Reload**: Rules are automatically reloaded when files change
+- **Web Dashboard**: Built-in UI for testing rules and monitoring status
+- **CLI Mode**: Transform text directly from the terminal
+- **Swagger UI**: Interactive API documentation
+- **macOS Service**: Auto-start via launchd
 
 ## Installation
 
-### From Source
+### Prerequisites
+
+- [Rust](https://rustup.rs/) (1.85 or higher)
+- Make (optional, for convenience commands)
+
+### Build from Source
 
 ```bash
-# Clone the repository
 git clone https://github.com/ahoendgen/handy-local-rules.git
 cd handy-local-rules
-
-# Build release binary
 cargo build --release
 
 # Binary is at target/release/handy-rules
+./target/release/handy-rules --help
 ```
 
-### Pre-built Binaries
+### Setup (Install Rules)
 
-Download from the [Releases](https://github.com/ahoendgen/handy-local-rules/releases) page.
+```bash
+# Copy rules and config to ~/.handy-local-rules/
+handy-rules setup
+
+# Overwrite existing files
+handy-rules setup --force
+```
+
+### macOS Service Installation
+
+```bash
+# Install (builds release, installs service + CLI)
+make install
+
+# Uninstall
+make uninstall
+
+# Reinstall (after code changes)
+make reinstall
+
+# Control service
+make service-start
+make service-stop
+make service-status
+make service-logs
+```
+
+After `make install`:
+
+- CLI available at `/usr/local/bin/handy-rules`
+- Service auto-starts on login
+- Logs at `~/.handy-local-rules/handy-local-rules.log`
 
 ## Quick Start
 
-### 1. Create a rules file
+1. **Run setup**
 
-Create `rules.json`:
+   ```bash
+   handy-rules setup
+   ```
 
-```json
-[
-  {
-    "id": "slash",
-    "description": "spoken 'slash' -> /",
-    "type": "regex",
-    "pattern": "(?i)\\bslash\\b",
-    "replacement": "/",
-    "priority": 100,
-    "enabled": true
-  },
-  {
-    "id": "dot",
-    "description": "spoken 'dot' -> .",
-    "type": "regex",
-    "pattern": "(?i)\\bdot\\b",
-    "replacement": ".",
-    "priority": 80,
-    "enabled": true
-  }
-]
-```
+2. **Start the server**
 
-### 2. Start the server
+   ```bash
+   handy-rules serve
+   ```
 
-```bash
-handy-rules serve
-```
+3. **Check status**
 
-### 3. Test it
+   ```bash
+   handy-rules status
+   ```
 
-```bash
-curl -X POST http://localhost:61234/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","content":"foo slash bar dot com"}]}'
-```
+   Output:
 
-**Response:**
+   ```
+   handy-local-rules Status
 
-```json
-{
-  "id": "local-abc123...",
-  "object": "chat.completion",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "foo / bar . com"
-      }
-    }
-  ]
-}
-```
+   Service installed: ✓ yes
+   Service running:   ✓ yes
+   CLI installed:     ✓ yes
+   Health check:      ✓ ok (http://127.0.0.1:61234/health)
 
-## Usage
+   Configuration:
+     Config dir: /Users/you/.handy-local-rules
+     Server:     127.0.0.1:61234
+   ```
 
-### Server Mode
+## API Usage
 
-```bash
-# Start with defaults (localhost:61234)
-handy-rules serve
+The server exposes an OpenAI-compatible `/v1/chat/completions` endpoint.
 
-# Custom host and port
-handy-rules serve --host 0.0.0.0 --port 9000
-
-# With custom config
-handy-rules serve --config my-config.json
-
-# With additional rules
-handy-rules serve --rules extra-rules.json
-```
-
-### CLI Mode
-
-```bash
-# Transform text directly
-handy-rules transform "foo slash bar"
-# Output: foo / bar
-
-# Read from stdin
-echo "hello dot world" | handy-rules transform --stdin
-# Output: hello . world
-
-# List all rules
-handy-rules list-rules
-
-# Validate rules files
-handy-rules validate
-```
-
-### Global Options
-
-```bash
--c, --config <FILE>     Path to config.json
--r, --rules <PATH>      Additional rules file/glob/directory
--l, --log-level <LEVEL> Log level (trace/debug/info/warn/error)
--h, --help              Show help
--V, --version           Show version
-```
-
-## Configuration
-
-Configuration is loaded from the following locations (in order of precedence):
-
-1. CLI arguments (highest priority)
-2. Config file specified via `--config`
-3. `config.json` in current directory
-4. `~/.handy-local-rules/config.json`
-5. Built-in defaults
-
-### Default Config Directory
-
-The application automatically looks for configuration in `~/.handy-local-rules/`:
-
-```
-~/.handy-local-rules/
-├── config.json      # Main configuration
-├── rules.json       # Default rules file
-└── *.json           # Additional rule files (loaded via glob)
-```
-
-### config.json
-
-```json
-{
-  "host": "127.0.0.1",
-  "port": 61234,
-  "rules_paths": ["rules.json", "custom-rules/*.json", "extra-rules/"],
-  "api_key": null,
-  "log_level": "info",
-  "max_log_entries": 1000,
-  "cors_enabled": true
-}
-```
-
-### Configuration Options
-
-| Option               | Default      | Description                                          |
-| -------------------- | ------------ | ---------------------------------------------------- |
-| `host`               | `127.0.0.1`  | Host/IP to bind to (`0.0.0.0` for all interfaces)    |
-| `port`               | `61234`      | Port to listen on (uses private port range)          |
-| `rules_paths`        | `rules.json` | Rules file(s), directories, or glob patterns         |
-| `api_key`            | `null`       | Optional API key for authentication                  |
-| `log_level`          | `info`       | Log level: `trace`, `debug`, `info`, `warn`, `error` |
-| `max_log_entries`    | `1000`       | Maximum transformation log entries to keep in memory |
-| `cors_enabled`       | `true`       | Enable CORS headers for cross-origin requests        |
-| `enable_shell_rules` | `false`      | Enable shell command rules (**security risk**)       |
-
-### Port Selection
-
-The default port `61234` is in the private/dynamic port range (49152-65535), which minimizes conflicts with other services. The server checks if the port is available at startup and provides helpful error messages if it's in use.
-
-### Rules Paths
-
-The `rules_paths` option accepts multiple formats:
-
-```json
-// Single file
-"rules_paths": "rules.json"
-
-// Multiple files
-"rules_paths": ["rules.json", "custom.json"]
-
-// Glob pattern
-"rules_paths": "rules/*.json"
-
-// Directory (loads all .json files)
-"rules_paths": "rules/"
-
-// Mixed
-"rules_paths": [
-  "rules.json",
-  "custom-rules/*.json",
-  "extra/"
-]
-```
-
-## Rule Types
-
-### 1. Regex Rules
-
-Pattern-based text replacement using Rust regex syntax:
-
-```json
-{
-  "id": "slash",
-  "type": "regex",
-  "pattern": "(?i)\\bslash\\b",
-  "replacement": "/",
-  "priority": 100,
-  "enabled": true
-}
-```
-
-**Options:**
-
-- `pattern` — Rust regex pattern
-- `replacement` — Replacement string (supports `$1`, `$2` backreferences)
-- `priority` — Higher priority rules are applied first
-- `enabled` — Set to `false` to disable without removing
-- `ignore_case` — Case-insensitive matching (or use `(?i)` in pattern)
-- `stop_on_match` — Stop processing further rules if this rule matches
-
-**Common Patterns:**
-
-| Pattern          | Description                 |
-| ---------------- | --------------------------- |
-| `(?i)\\bword\\b` | Case-insensitive whole word |
-| `\\s+`           | Multiple whitespace         |
-| `^prefix`        | Start of string             |
-| `suffix$`        | End of string               |
-
-### 2. Function Rules
-
-Built-in transformation functions:
-
-```json
-{
-  "id": "normalize",
-  "type": "function",
-  "pattern": "normalize_whitespace",
-  "priority": 10,
-  "enabled": true
-}
-```
-
-**Available Functions:**
-
-| Function               | Description                        |
-| ---------------------- | ---------------------------------- |
-| `uppercase` / `upper`  | Convert to uppercase               |
-| `lowercase` / `lower`  | Convert to lowercase               |
-| `trim`                 | Remove leading/trailing whitespace |
-| `trim_start` / `ltrim` | Remove leading whitespace          |
-| `trim_end` / `rtrim`   | Remove trailing whitespace         |
-| `capitalize`           | Capitalize first letter            |
-| `reverse`              | Reverse the string                 |
-| `normalize_whitespace` | Multiple spaces → single space     |
-
-### 3. Shell Rules
-
-Execute shell commands for complex transformations:
-
-```json
-{
-  "id": "custom-transform",
-  "type": "shell",
-  "pattern": "cat | sed 's/foo/bar/g'",
-  "timeout_ms": 5000,
-  "priority": 50,
-  "enabled": true
-}
-```
-
-**⚠️ Security Warning:** Shell rules can execute arbitrary commands on your system. They are **disabled by default**. To enable, set `enable_shell_rules: true` in your config.
-
-**How it works:**
-
-1. Input text is sent to the command via **stdin**
-2. Command output from **stdout** becomes the result
-3. Commands run with a configurable timeout (default: 5000ms)
-
-**Examples:**
-
-```json
-// Uppercase via tr
-{"pattern": "cat | tr 'a-z' 'A-Z'"}
-
-// Custom sed replacement
-{"pattern": "cat | sed 's/foo/bar/g'"}
-
-// Python script
-{"pattern": "python3 transform.py"}
-```
-
-## API Endpoints
-
-| Method | Path                     | Description                  |
-| ------ | ------------------------ | ---------------------------- |
-| GET    | `/`                      | Dashboard UI                 |
-| GET    | `/health`                | Health check                 |
-| POST   | `/v1/chat/completions`   | Process text with rules      |
-| GET    | `/v1/models`             | List available models        |
-| GET    | `/v1/rules`              | List all loaded rules        |
-| POST   | `/v1/rules/{id}/toggle`  | Toggle rule enabled/disabled |
-| GET    | `/v1/logs`               | Get transformation logs      |
-| DELETE | `/v1/logs`               | Clear transformation logs    |
-| GET    | `/swagger-ui/`           | Swagger UI                   |
-| GET    | `/api-docs/openapi.json` | OpenAPI specification        |
-
-### Chat Completion Request
+### Chat Completion (OpenAI Format)
 
 ```bash
 curl -X POST http://localhost:61234/v1/chat/completions \
@@ -341,17 +130,44 @@ curl -X POST http://localhost:61234/v1/chat/completions \
   -d '{
     "model": "local-rules",
     "messages": [
-      {"role": "user", "content": "foo slash bar dot com"}
+      {"role": "user", "content": "hello world period new line how are you question mark"}
     ]
   }'
 ```
 
-The server accepts multiple input formats:
+Response:
 
-- `messages` array (OpenAI format)
-- `prompt` field
-- `input` field
-- `text` field
+```json
+{
+  "id": "local-abc123",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "hello world.\nhow are you?"
+      }
+    }
+  ]
+}
+```
+
+### Alternative Input Formats
+
+The server also accepts `prompt`, `input`, or `text` fields:
+
+```bash
+# Using prompt field
+curl -X POST http://localhost:61234/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test slash example"}'
+
+# Using input field
+curl -X POST http://localhost:61234/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"input": "test slash example"}'
+```
 
 ### Health Check
 
@@ -367,116 +183,170 @@ curl http://localhost:61234/health
 }
 ```
 
-## Integration with Handy
-
-1. Start the local rules server:
-
-   ```bash
-   handy-rules serve
-   ```
-
-2. In Handy Settings, enable **Experimental Features** to unlock post-processing options.
-
-3. Configure the API settings:
-
-   | Setting           | Value                       |
-   | ----------------- | --------------------------- |
-   | **Anbieter**      | `Custom`                    |
-   | **Basis-URL**     | `http://localhost:61234/v1` |
-   | **API-Schlüssel** | `sk-...` (any placeholder)  |
-   | **Modell**        | `local-rules`               |
-
-4. Create a prompt for local rules:
-
-   | Setting                | Value         |
-   | ---------------------- | ------------- |
-   | **Prompt-Name**        | `Local Rules` |
-   | **Prompt-Anweisungen** | `${output}`   |
-
-   > **Tip:** Use `${output}` to pass the transcribed text directly to the rules engine.
-
-## Web Dashboard
-
-Access the dashboard at `http://localhost:61234/`:
-
-- View all loaded rules with status and priority
-- **Toggle rules on/off** with instant persistence to rules files
-- Test transformations interactively
-- Monitor server health
-- Quick links to Swagger UI and API docs
-
-## Hot-Reload
-
-Rules files are automatically watched for changes. When you modify a rules file, the server reloads it without requiring a restart.
-
-For development with Rust code changes, use:
+### List Models
 
 ```bash
-cargo watch -x 'run -- serve'
+curl http://localhost:61234/v1/models
 ```
 
-**Note:** When toggling rules via the dashboard or API, the changes are persisted back to the rules file. This will reformat the JSON and **remove any comments** (JSON does not support comments).
+### API Endpoints
 
-## Example Rules
+| Method | Path                     | Description             |
+| ------ | ------------------------ | ----------------------- |
+| GET    | `/`                      | Dashboard UI            |
+| GET    | `/health`                | Health check            |
+| POST   | `/v1/chat/completions`   | Transform text          |
+| GET    | `/v1/models`             | List available models   |
+| GET    | `/v1/rules`              | List all rules          |
+| POST   | `/v1/rules/{id}/toggle`  | Toggle rule on/off      |
+| GET    | `/v1/logs`               | Get transformation logs |
+| DELETE | `/v1/logs`               | Clear logs              |
+| GET    | `/swagger-ui/`           | Swagger UI              |
+| GET    | `/api-docs/openapi.json` | OpenAPI spec            |
 
-### Common Symbols
+## Configuration
+
+Configuration is loaded from (in order of precedence):
+
+1. CLI arguments
+2. Config file via `--config`
+3. `./config.json`
+4. `~/.handy-local-rules/config.json`
+
+### Example `config.json`
 
 ```json
-[
-  { "id": "slash", "pattern": "(?i)\\bslash\\b", "replacement": "/", "priority": 100 },
-  { "id": "backslash", "pattern": "(?i)\\bbackslash\\b", "replacement": "\\\\", "priority": 90 },
-  { "id": "dot", "pattern": "(?i)\\bdot\\b", "replacement": ".", "priority": 80 },
-  { "id": "at-sign", "pattern": "(?i)\\bat sign\\b", "replacement": "@", "priority": 70 },
-  { "id": "underscore", "pattern": "(?i)\\bunderscore\\b", "replacement": "_", "priority": 60 },
-  { "id": "dash", "pattern": "(?i)\\bdash\\b", "replacement": "-", "priority": 50 }
-]
+{
+  "host": "127.0.0.1",
+  "port": 61234,
+  "rules_paths": ["rules/**/*.json"],
+  "log_level": "info",
+  "enable_shell_rules": false
+}
 ```
 
-### Text Cleanup
+### Options
+
+| Option               | Default      | Description                                 |
+| -------------------- | ------------ | ------------------------------------------- |
+| `host`               | `127.0.0.1`  | Host/IP (`0.0.0.0` for all interfaces)      |
+| `port`               | `61234`      | Port (private port range)                   |
+| `rules_paths`        | `rules.json` | Rule files, directories, or glob patterns   |
+| `log_level`          | `info`       | Log level: `trace`, `debug`, `info`, `warn` |
+| `enable_shell_rules` | `false`      | Enable shell rules (**security risk**)      |
+
+## Defining Rules
+
+Rules are defined in JSON files.
+
+### Regex Rules (Default)
 
 ```json
-[
-  { "id": "normalize", "type": "function", "pattern": "normalize_whitespace", "priority": 10 },
-  { "id": "trim", "type": "function", "pattern": "trim", "priority": 5 }
-]
+{
+  "id": "period",
+  "description": "period -> .",
+  "type": "regex",
+  "pattern": "(?i)\\bperiod\\b",
+  "replacement": ".",
+  "priority": 100,
+  "enabled": true
+}
 ```
 
-### Programming Symbols
+**Options:**
+
+- `pattern` — Rust regex pattern
+- `replacement` — Replacement text (supports `$1`, `$2` backreferences)
+- `priority` — Higher priority = applied first
+- `enabled` — Set to `false` to disable
+- `ignore_case` — Case-insensitive matching
+- `stop_on_match` — Stop processing after this rule matches
+
+### Function Rules
 
 ```json
-[
-  { "id": "open-paren", "pattern": "(?i)\\bopen paren\\b", "replacement": "(", "priority": 100 },
-  { "id": "close-paren", "pattern": "(?i)\\bclose paren\\b", "replacement": ")", "priority": 100 },
-  { "id": "open-bracket", "pattern": "(?i)\\bopen bracket\\b", "replacement": "[", "priority": 100 },
-  { "id": "close-bracket", "pattern": "(?i)\\bclose bracket\\b", "replacement": "]", "priority": 100 },
-  { "id": "equals", "pattern": "(?i)\\bequals\\b", "replacement": "=", "priority": 100 },
-  { "id": "plus", "pattern": "(?i)\\bplus\\b", "replacement": "+", "priority": 100 }
-]
+{
+  "id": "cleanup",
+  "type": "function",
+  "pattern": "normalize_whitespace",
+  "priority": 10
+}
+```
+
+Available functions:
+
+| Function               | Description                    |
+| ---------------------- | ------------------------------ |
+| `uppercase` / `upper`  | Convert to uppercase           |
+| `lowercase` / `lower`  | Convert to lowercase           |
+| `trim`                 | Remove leading/trailing spaces |
+| `trim_start` / `ltrim` | Remove leading whitespace      |
+| `trim_end` / `rtrim`   | Remove trailing whitespace     |
+| `capitalize`           | Capitalize first letter        |
+| `reverse`              | Reverse the string             |
+| `normalize_whitespace` | Multiple spaces → single space |
+
+### Shell Rules
+
+```json
+{
+  "id": "custom-script",
+  "type": "shell",
+  "pattern": "python3 my_script.py",
+  "timeout_ms": 5000,
+  "priority": 50
+}
+```
+
+**Note:** Requires `enable_shell_rules: true` in config.
+
+## CLI Usage
+
+```bash
+# Start server
+handy-rules serve
+handy-rules serve --port 9000 --host 0.0.0.0
+
+# Transform text
+handy-rules transform "hello period world"
+echo "test slash example" | handy-rules transform --stdin
+
+# List rules
+handy-rules list-rules
+
+# Validate rules
+handy-rules validate
+
+# Check status
+handy-rules status
+
+# Open dashboard in browser
+handy-rules dashboard
+
+# Setup (copy rules)
+handy-rules setup
+handy-rules setup --force
+```
+
+### Global Options
+
+```bash
+-c, --config <FILE>     Path to config.json
+-r, --rules <PATH>      Additional rules file/glob/directory
+-l, --log-level <LEVEL> Log level (trace/debug/info/warn/error)
+-h, --help              Show help
+-V, --version           Show version
 ```
 
 ## Development
 
-### Prerequisites
-
-- Rust 1.75+ (install via [rustup](https://rustup.rs))
-- Node.js 18+ (for git hooks)
-
-### Setup
-
 ```bash
-# Clone and setup
-git clone https://github.com/ahoendgen/handy-local-rules.git
-cd handy-local-rules
-make setup
-
-# Run in development
-cargo watch -x 'run -- serve'
-
-# Run tests
-cargo test
-
-# Format and lint
-make check
+make setup      # Install git hooks & tools
+make dev        # Server with hot-reload
+make dev-tmux   # In tmux session with debug logging
+make check      # Format, lint, and test
+make test       # Run unit tests
+make release    # Build release binary
 ```
 
 ### Project Structure
@@ -491,24 +361,16 @@ src/
 ├── static/          # Dashboard UI
 ├── rules/           # Rule engine
 └── models/          # API types
+
+rules/
+├── de/              # German rules
+│   └── satzzeichen.json
+├── general/         # General rules
+│   └── cleanup.json
+└── dev-kommandos/   # Developer shortcuts
+    └── git.json
 ```
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new functionality
-4. Ensure `make check` passes
-5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Inspired by the need for local, offline text transformation
-- Built with [axum](https://github.com/tokio-rs/axum) and [tokio](https://tokio.rs)
-- OpenAPI documentation powered by [utoipa](https://github.com/juhaku/utoipa)
+MIT License - See [LICENSE](LICENSE) file.
