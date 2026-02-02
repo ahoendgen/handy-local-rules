@@ -2,10 +2,9 @@
 name = "handy-local-rules"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name"]
 description = "Local rule-based text transformer with OpenAI-compatible API"
 license = "MIT"
-repository = "https://github.com/yourname/handy-local-rules"
+repository = "https://github.com/ahoendgen/handy-local-rules"
 
 [dependencies]
 # Web framework

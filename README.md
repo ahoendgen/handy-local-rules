@@ -1,6 +1,10 @@
 # Handy Local Rules
 
-A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible Chat Completion API for deterministic text transformation. Designed as a post-processing backend for [Handy](https://github.com/handy-app) and similar applications.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
+[![OpenAI Compatible](https://img.shields.io/badge/OpenAI-Compatible-green.svg)](https://platform.openai.com/docs/api-reference/chat)
+
+A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible Chat Completion API for deterministic text transformation. Designed as a post-processing backend for [Handy](https://handy.computer/) ([GitHub](https://github.com/cjpais/Handy)) and similar applications.
 
 ## Features
 
@@ -19,7 +23,7 @@ A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourname/handy-local-rules.git
+git clone https://github.com/ahoendgen/handy-local-rules.git
 cd handy-local-rules
 
 # Build release binary
@@ -30,7 +34,7 @@ cargo build --release
 
 ### Pre-built Binaries
 
-Download from the [Releases](https://github.com/yourname/handy-local-rules/releases) page.
+Download from the [Releases](https://github.com/ahoendgen/handy-local-rules/releases) page.
 
 ## Quick Start
 
@@ -81,13 +85,15 @@ curl -X POST http://localhost:61234/v1/chat/completions \
 {
   "id": "local-abc123...",
   "object": "chat.completion",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "foo / bar . com"
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "foo / bar . com"
+      }
     }
-  }]
+  ]
 }
 ```
 
@@ -164,11 +170,7 @@ The application automatically looks for configuration in `~/.handy-local-rules/`
 {
   "host": "127.0.0.1",
   "port": 61234,
-  "rules_paths": [
-    "rules.json",
-    "custom-rules/*.json",
-    "extra-rules/"
-  ],
+  "rules_paths": ["rules.json", "custom-rules/*.json", "extra-rules/"],
   "api_key": null,
   "log_level": "info",
   "max_log_entries": 1000,
@@ -178,16 +180,16 @@ The application automatically looks for configuration in `~/.handy-local-rules/`
 
 ### Configuration Options
 
-| Option               | Default       | Description                                         |
-| -------------------- | ------------- | --------------------------------------------------- |
-| `host`               | `127.0.0.1`   | Host/IP to bind to (`0.0.0.0` for all interfaces)   |
-| `port`               | `61234`       | Port to listen on (uses private port range)         |
-| `rules_paths`        | `rules.json`  | Rules file(s), directories, or glob patterns        |
-| `api_key`            | `null`        | Optional API key for authentication                 |
-| `log_level`          | `info`        | Log level: `trace`, `debug`, `info`, `warn`, `error`|
-| `max_log_entries`    | `1000`        | Maximum transformation log entries to keep in memory|
-| `cors_enabled`       | `true`        | Enable CORS headers for cross-origin requests       |
-| `enable_shell_rules` | `false`       | Enable shell command rules (**security risk**)      |
+| Option               | Default      | Description                                          |
+| -------------------- | ------------ | ---------------------------------------------------- |
+| `host`               | `127.0.0.1`  | Host/IP to bind to (`0.0.0.0` for all interfaces)    |
+| `port`               | `61234`      | Port to listen on (uses private port range)          |
+| `rules_paths`        | `rules.json` | Rules file(s), directories, or glob patterns         |
+| `api_key`            | `null`       | Optional API key for authentication                  |
+| `log_level`          | `info`       | Log level: `trace`, `debug`, `info`, `warn`, `error` |
+| `max_log_entries`    | `1000`       | Maximum transformation log entries to keep in memory |
+| `cors_enabled`       | `true`       | Enable CORS headers for cross-origin requests        |
+| `enable_shell_rules` | `false`      | Enable shell command rules (**security risk**)       |
 
 ### Port Selection
 
@@ -246,12 +248,12 @@ Pattern-based text replacement using Rust regex syntax:
 
 **Common Patterns:**
 
-| Pattern | Description |
-|---------|-------------|
+| Pattern          | Description                 |
+| ---------------- | --------------------------- |
 | `(?i)\\bword\\b` | Case-insensitive whole word |
-| `\\s+` | Multiple whitespace |
-| `^prefix` | Start of string |
-| `suffix$` | End of string |
+| `\\s+`           | Multiple whitespace         |
+| `^prefix`        | Start of string             |
+| `suffix$`        | End of string               |
 
 ### 2. Function Rules
 
@@ -269,16 +271,16 @@ Built-in transformation functions:
 
 **Available Functions:**
 
-| Function              | Description                        |
-| --------------------- | ---------------------------------- |
-| `uppercase` / `upper` | Convert to uppercase               |
-| `lowercase` / `lower` | Convert to lowercase               |
-| `trim`                | Remove leading/trailing whitespace |
-| `trim_start` / `ltrim`| Remove leading whitespace          |
-| `trim_end` / `rtrim`  | Remove trailing whitespace         |
-| `capitalize`          | Capitalize first letter            |
-| `reverse`             | Reverse the string                 |
-| `normalize_whitespace`| Multiple spaces → single space     |
+| Function               | Description                        |
+| ---------------------- | ---------------------------------- |
+| `uppercase` / `upper`  | Convert to uppercase               |
+| `lowercase` / `lower`  | Convert to lowercase               |
+| `trim`                 | Remove leading/trailing whitespace |
+| `trim_start` / `ltrim` | Remove leading whitespace          |
+| `trim_end` / `rtrim`   | Remove trailing whitespace         |
+| `capitalize`           | Capitalize first letter            |
+| `reverse`              | Reverse the string                 |
+| `normalize_whitespace` | Multiple spaces → single space     |
 
 ### 3. Shell Rules
 
@@ -318,18 +320,18 @@ Execute shell commands for complex transformations:
 
 ## API Endpoints
 
-| Method | Path                        | Description                   |
-| ------ | --------------------------- | ----------------------------- |
-| GET    | `/`                         | Dashboard UI                  |
-| GET    | `/health`                   | Health check                  |
-| POST   | `/v1/chat/completions`      | Process text with rules       |
-| GET    | `/v1/models`                | List available models         |
-| GET    | `/v1/rules`                 | List all loaded rules         |
-| POST   | `/v1/rules/{id}/toggle`     | Toggle rule enabled/disabled  |
-| GET    | `/v1/logs`                  | Get transformation logs       |
-| DELETE | `/v1/logs`                  | Clear transformation logs     |
-| GET    | `/swagger-ui/`              | Swagger UI                    |
-| GET    | `/api-docs/openapi.json`    | OpenAPI specification         |
+| Method | Path                     | Description                  |
+| ------ | ------------------------ | ---------------------------- |
+| GET    | `/`                      | Dashboard UI                 |
+| GET    | `/health`                | Health check                 |
+| POST   | `/v1/chat/completions`   | Process text with rules      |
+| GET    | `/v1/models`             | List available models        |
+| GET    | `/v1/rules`              | List all loaded rules        |
+| POST   | `/v1/rules/{id}/toggle`  | Toggle rule enabled/disabled |
+| GET    | `/v1/logs`               | Get transformation logs      |
+| DELETE | `/v1/logs`               | Clear transformation logs    |
+| GET    | `/swagger-ui/`           | Swagger UI                   |
+| GET    | `/api-docs/openapi.json` | OpenAPI specification        |
 
 ### Chat Completion Request
 
@@ -368,6 +370,7 @@ curl http://localhost:61234/health
 ## Integration with Handy
 
 1. Start the local rules server:
+
    ```bash
    handy-rules serve
    ```
@@ -406,12 +409,12 @@ cargo watch -x 'run -- serve'
 
 ```json
 [
-  {"id": "slash", "pattern": "(?i)\\bslash\\b", "replacement": "/", "priority": 100},
-  {"id": "backslash", "pattern": "(?i)\\bbackslash\\b", "replacement": "\\\\", "priority": 90},
-  {"id": "dot", "pattern": "(?i)\\bdot\\b", "replacement": ".", "priority": 80},
-  {"id": "at-sign", "pattern": "(?i)\\bat sign\\b", "replacement": "@", "priority": 70},
-  {"id": "underscore", "pattern": "(?i)\\bunderscore\\b", "replacement": "_", "priority": 60},
-  {"id": "dash", "pattern": "(?i)\\bdash\\b", "replacement": "-", "priority": 50}
+  { "id": "slash", "pattern": "(?i)\\bslash\\b", "replacement": "/", "priority": 100 },
+  { "id": "backslash", "pattern": "(?i)\\bbackslash\\b", "replacement": "\\\\", "priority": 90 },
+  { "id": "dot", "pattern": "(?i)\\bdot\\b", "replacement": ".", "priority": 80 },
+  { "id": "at-sign", "pattern": "(?i)\\bat sign\\b", "replacement": "@", "priority": 70 },
+  { "id": "underscore", "pattern": "(?i)\\bunderscore\\b", "replacement": "_", "priority": 60 },
+  { "id": "dash", "pattern": "(?i)\\bdash\\b", "replacement": "-", "priority": 50 }
 ]
 ```
 
@@ -419,8 +422,8 @@ cargo watch -x 'run -- serve'
 
 ```json
 [
-  {"id": "normalize", "type": "function", "pattern": "normalize_whitespace", "priority": 10},
-  {"id": "trim", "type": "function", "pattern": "trim", "priority": 5}
+  { "id": "normalize", "type": "function", "pattern": "normalize_whitespace", "priority": 10 },
+  { "id": "trim", "type": "function", "pattern": "trim", "priority": 5 }
 ]
 ```
 
@@ -428,12 +431,12 @@ cargo watch -x 'run -- serve'
 
 ```json
 [
-  {"id": "open-paren", "pattern": "(?i)\\bopen paren\\b", "replacement": "(", "priority": 100},
-  {"id": "close-paren", "pattern": "(?i)\\bclose paren\\b", "replacement": ")", "priority": 100},
-  {"id": "open-bracket", "pattern": "(?i)\\bopen bracket\\b", "replacement": "[", "priority": 100},
-  {"id": "close-bracket", "pattern": "(?i)\\bclose bracket\\b", "replacement": "]", "priority": 100},
-  {"id": "equals", "pattern": "(?i)\\bequals\\b", "replacement": "=", "priority": 100},
-  {"id": "plus", "pattern": "(?i)\\bplus\\b", "replacement": "+", "priority": 100}
+  { "id": "open-paren", "pattern": "(?i)\\bopen paren\\b", "replacement": "(", "priority": 100 },
+  { "id": "close-paren", "pattern": "(?i)\\bclose paren\\b", "replacement": ")", "priority": 100 },
+  { "id": "open-bracket", "pattern": "(?i)\\bopen bracket\\b", "replacement": "[", "priority": 100 },
+  { "id": "close-bracket", "pattern": "(?i)\\bclose bracket\\b", "replacement": "]", "priority": 100 },
+  { "id": "equals", "pattern": "(?i)\\bequals\\b", "replacement": "=", "priority": 100 },
+  { "id": "plus", "pattern": "(?i)\\bplus\\b", "replacement": "+", "priority": 100 }
 ]
 ```
 
@@ -448,7 +451,7 @@ cargo watch -x 'run -- serve'
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourname/handy-local-rules.git
+git clone https://github.com/ahoendgen/handy-local-rules.git
 cd handy-local-rules
 make setup
 

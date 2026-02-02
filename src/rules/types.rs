@@ -139,11 +139,9 @@ impl BuiltinFunction {
                     None => String::new(),
                     Some(first) => first.to_uppercase().chain(chars).collect(),
                 }
-            }
+            },
             Self::Reverse => input.chars().rev().collect(),
-            Self::NormalizeWhitespace => {
-                input.split_whitespace().collect::<Vec<_>>().join(" ")
-            }
+            Self::NormalizeWhitespace => input.split_whitespace().collect::<Vec<_>>().join(" "),
         }
     }
 }

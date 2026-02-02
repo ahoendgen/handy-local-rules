@@ -81,7 +81,8 @@ pub fn find_rules_paths(explicit_paths: &[String]) -> Vec<String> {
     }
 
     // If no explicit paths, check default locations
-    if explicit_paths.is_empty() || (explicit_paths.len() == 1 && explicit_paths[0] == RULES_FILE_NAME)
+    if explicit_paths.is_empty()
+        || (explicit_paths.len() == 1 && explicit_paths[0] == RULES_FILE_NAME)
     {
         // 2. Current directory
         let cwd_rules = Path::new(RULES_FILE_NAME);

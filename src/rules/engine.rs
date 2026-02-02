@@ -58,7 +58,10 @@ impl RuleEngine {
         let rules = loader::load_rules_from_paths(paths)?;
 
         // Count and warn about shell rules
-        let shell_rule_count = rules.iter().filter(|r| matches!(r.rule_type, RuleType::Shell)).count();
+        let shell_rule_count = rules
+            .iter()
+            .filter(|r| matches!(r.rule_type, RuleType::Shell))
+            .count();
         if shell_rule_count > 0 {
             if enable_shell_rules {
                 tracing::warn!(
@@ -120,7 +123,7 @@ impl RuleEngine {
                 None => {
                     tracing::warn!("Rule '{}' not found", rule_id);
                     return None;
-                }
+                },
             }
         };
 
@@ -151,7 +154,11 @@ impl RuleEngine {
         for rule in rules.iter_mut() {
             if rule.id == rule_id {
                 rule.enabled = enabled;
-                tracing::info!("Rule '{}' is now {}", rule_id, if enabled { "enabled" } else { "disabled" });
+                tracing::info!(
+                    "Rule '{}' is now {}",
+                    rule_id,
+                    if enabled { "enabled" } else { "disabled" }
+                );
                 return Some(enabled);
             }
         }
@@ -215,7 +222,10 @@ impl RuleEngine {
 
                 // Stop processing if rule has stop_on_match flag
                 if rule.stop_on_match {
-                    tracing::debug!("Rule '{}' has stop_on_match=true, stopping processing", rule.id);
+                    tracing::debug!(
+                        "Rule '{}' has stop_on_match=true, stopping processing",
+                        rule.id
+                    );
                     break;
                 }
             }
@@ -225,12 +235,7 @@ impl RuleEngine {
     }
 
     /// Apply a regex-based rule
-    fn apply_regex_rule(
-        &self,
-        rule: &Rule,
-        text: &str,
-        cache: &HashMap<String, Regex>,
-    ) -> String {
+    fn apply_regex_rule(&self, rule: &Rule, text: &str, cache: &HashMap<String, Regex>) -> String {
         if let Some(regex) = cache.get(&rule.id) {
             regex.replace_all(text, &rule.replacement).to_string()
         } else {
@@ -247,7 +252,7 @@ impl RuleEngine {
             Err(e) => {
                 tracing::error!("Shell rule '{}' failed: {}", rule.id, e);
                 text.to_string() // Return original on error
-            }
+            },
         }
     }
 
@@ -280,7 +285,9 @@ impl RuleEngine {
             .map_err(|e| AppError::RulesLoadError(format!("Command failed: {}", e)))?;
 
         if output.status.success() {
-            Ok(String::from_utf8_lossy(&output.stdout).trim_end().to_string())
+            Ok(String::from_utf8_lossy(&output.stdout)
+                .trim_end()
+                .to_string())
         } else {
             let stderr = String::from_utf8_lossy(&output.stderr);
             Err(AppError::RulesLoadError(format!(
@@ -297,7 +304,7 @@ impl RuleEngine {
             None => {
                 tracing::warn!("Unknown function '{}' in rule '{}'", rule.pattern, rule.id);
                 text.to_string()
-            }
+            },
         }
     }
 
@@ -362,11 +369,11 @@ impl RuleEngine {
                 match Regex::new(&pattern) {
                     Ok(regex) => {
                         cache.insert(rule.id.clone(), regex);
-                    }
+                    },
                     Err(e) => {
                         tracing::error!("Invalid regex in rule '{}': {}", rule.id, e);
                         return Err(AppError::InvalidRegex(e));
-                    }
+                    },
                 }
             }
         }

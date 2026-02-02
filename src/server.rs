@@ -81,7 +81,7 @@ fn check_port_available(host: &str, port: u16) -> Result<(), String> {
                 "Port {} is not available on {}: {}\n\nHint: {}\n\nTry:\n  - Use a different port: --port <PORT>\n  - Find what's using the port: lsof -i :{}\n  - Kill the process using the port",
                 port, host, e, hint, port
             ))
-        }
+        },
     }
 }
 

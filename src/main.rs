@@ -86,13 +86,7 @@ async fn main() -> anyhow::Result<()> {
     let config = load_config(&args.config);
 
     // Merge global CLI args
-    let config = config.merge_with_args(
-        None,
-        None,
-        args.rules,
-        None,
-        args.log_level,
-    );
+    let config = config.merge_with_args(None, None, args.rules, None, args.log_level);
 
     // Initialize logging
     tracing_subscriber::fmt()
@@ -103,23 +97,21 @@ async fn main() -> anyhow::Result<()> {
 
     // Handle command
     match args.command {
-        Some(Command::Serve { host, port, api_key }) => {
+        Some(Command::Serve {
+            host,
+            port,
+            api_key,
+        }) => {
             let config = config.merge_with_args(host, port, None, api_key, None);
             run_server(config).await
-        }
-        Some(Command::Transform { text, stdin }) => {
-            run_transform(&config, text, stdin)
-        }
-        Some(Command::Validate) => {
-            run_validate(&config)
-        }
-        Some(Command::ListRules) => {
-            run_list_rules(&config)
-        }
+        },
+        Some(Command::Transform { text, stdin }) => run_transform(&config, text, stdin),
+        Some(Command::Validate) => run_validate(&config),
+        Some(Command::ListRules) => run_list_rules(&config),
         None => {
             // Default: start server (backward compatible)
             run_server(config).await
-        }
+        },
     }
 }
 
@@ -135,14 +127,11 @@ fn load_config(config_path: &Option<String>) -> Config {
                 eprintln!("Error loading config from {}: {}", path.display(), e);
                 std::process::exit(1);
             })
-        }
+        },
         None => {
             if config_path.is_some() {
                 // User specified a config file but it wasn't found
-                eprintln!(
-                    "Config file not found: {}",
-                    config_path.as_ref().unwrap()
-                );
+                eprintln!("Config file not found: {}", config_path.as_ref().unwrap());
                 std::process::exit(1);
             }
             // No config file found, use defaults
@@ -153,7 +142,7 @@ fn load_config(config_path: &Option<String>) -> Config {
                 );
             }
             Config::default()
-        }
+        },
     }
 }
 
@@ -211,11 +200,11 @@ fn run_validate(config: &Config) -> anyhow::Result<()> {
             println!("✓ Rules files are valid");
             println!("  Loaded {} rules from {:?}", engine.rules_count(), paths);
             Ok(())
-        }
+        },
         Err(e) => {
             eprintln!("✗ Invalid rules: {}", e);
             std::process::exit(1);
-        }
+        },
     }
 }
 

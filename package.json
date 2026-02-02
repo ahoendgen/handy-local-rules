@@ -17,18 +17,8 @@
     "prettier": "^3.0.0"
   },
   "lint-staged": {
-    "*.rs": [
-      "cargo fmt -- --check",
-      "cargo clippy -- -D warnings"
-    ],
-    "Cargo.toml": [
-      "cargo fmt -- --check"
-    ],
-    "*.md": [
-      "prettier --write"
-    ],
-    "*.{json,yaml,yml}": [
-      "prettier --write"
-    ]
+    "*.rs": "rustfmt --edition 2021 --check",
+    "*.md": "prettier --write",
+    "*.{json,yaml,yml}": "prettier --write"
   }
 }

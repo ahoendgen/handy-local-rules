@@ -44,20 +44,19 @@ pub fn save_rules_to_file(path: &str, rules: &[Rule]) -> Result<(), AppError> {
     }
 
     // Read the original file to preserve formatting as much as possible
-    let content = fs::read_to_string(path).map_err(|e| {
-        AppError::RulesLoadError(format!("Failed to read {}: {}", path, e))
-    })?;
+    let content = fs::read_to_string(path)
+        .map_err(|e| AppError::RulesLoadError(format!("Failed to read {}: {}", path, e)))?;
 
     // Parse the original JSON to get the structure
-    let mut original: Vec<serde_json::Value> = serde_json::from_str(&content).map_err(|e| {
-        AppError::RulesLoadError(format!("Failed to parse {}: {}", path, e))
-    })?;
+    let mut original: Vec<serde_json::Value> = serde_json::from_str(&content)
+        .map_err(|e| AppError::RulesLoadError(format!("Failed to parse {}: {}", path, e)))?;
 
     // Update the enabled field for each rule
     for rule in rules_for_file {
-        if let Some(json_rule) = original.iter_mut().find(|r| {
-            r.get("id").and_then(|v| v.as_str()) == Some(&rule.id)
-        }) {
+        if let Some(json_rule) = original
+            .iter_mut()
+            .find(|r| r.get("id").and_then(|v| v.as_str()) == Some(&rule.id))
+        {
             if let Some(obj) = json_rule.as_object_mut() {
                 obj.insert("enabled".to_string(), serde_json::Value::Bool(rule.enabled));
             }
@@ -65,13 +64,11 @@ pub fn save_rules_to_file(path: &str, rules: &[Rule]) -> Result<(), AppError> {
     }
 
     // Write back with pretty formatting
-    let output = serde_json::to_string_pretty(&original).map_err(|e| {
-        AppError::RulesLoadError(format!("Failed to serialize rules: {}", e))
-    })?;
+    let output = serde_json::to_string_pretty(&original)
+        .map_err(|e| AppError::RulesLoadError(format!("Failed to serialize rules: {}", e)))?;
 
-    fs::write(path, output + "\n").map_err(|e| {
-        AppError::RulesLoadError(format!("Failed to write {}: {}", path, e))
-    })?;
+    fs::write(path, output + "\n")
+        .map_err(|e| AppError::RulesLoadError(format!("Failed to write {}: {}", path, e)))?;
 
     tracing::info!("Saved rules to {}", path);
 
@@ -130,7 +127,10 @@ pub fn load_rules_from_paths(paths: &[String]) -> Result<Vec<Rule>, AppError> {
 
 /// Watch the rules file for changes and reload when modified
 /// Returns the watcher so it can be stored (dropping it stops watching)
-pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<RecommendedWatcher, AppError> {
+pub fn watch_rules_file(
+    path: PathBuf,
+    engine: Arc<RuleEngine>,
+) -> Result<RecommendedWatcher, AppError> {
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -148,10 +148,7 @@ pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<Recomm
         notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
             match res {
                 Ok(event) => {
-                    if matches!(
-                        event.kind,
-                        EventKind::Modify(_) | EventKind::Create(_)
-                    ) {
+                    if matches!(event.kind, EventKind::Modify(_) | EventKind::Create(_)) {
                         // Debounce: check if enough time has passed since last reload
                         let now = SystemTime::now()
                             .duration_since(UNIX_EPOCH)
@@ -171,10 +168,10 @@ pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<Recomm
                             tracing::error!("Failed to reload rules: {}", e);
                         }
                     }
-                }
+                },
                 Err(e) => {
                     tracing::error!("File watcher error: {}", e);
-                }
+                },
             }
         })?;
 

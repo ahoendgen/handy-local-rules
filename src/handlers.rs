@@ -184,7 +184,7 @@ pub async fn toggle_rule(
                 enabled,
                 message: format!("Rule '{}' is now {}", rule_id, status),
             }))
-        }
+        },
         None => Err(StatusCode::NOT_FOUND),
     }
 }
