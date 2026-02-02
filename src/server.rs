@@ -19,7 +19,6 @@ use utoipa_swagger_ui::SwaggerUi;
 #[derive(Clone)]
 pub struct AppState {
     pub rule_engine: Arc<RuleEngine>,
-    pub api_key: Option<String>,
 }
 
 /// OpenAPI documentation
@@ -90,7 +89,6 @@ pub async fn run(
     host: &str,
     port: u16,
     rules_paths: &[String],
-    api_key: Option<String>,
     enable_shell_rules: bool,
 ) -> anyhow::Result<()> {
     // Check if port is available before doing anything else
@@ -104,10 +102,7 @@ pub async fn run(
     // Start file watcher for hot-reload
     rule_engine.clone().watch_for_changes()?;
 
-    let state = AppState {
-        rule_engine,
-        api_key,
-    };
+    let state = AppState { rule_engine };
 
     // Build router
     let app = Router::new()

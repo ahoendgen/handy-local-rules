@@ -1,0 +1,90 @@
+[
+  {
+    "id": "de-cleanup-multiple-commas",
+    "description": "Mehrere Kommas -> ein Komma",
+    "type": "regex",
+    "pattern": ",(?:\\s*,)+",
+    "replacement": ",",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-multiple-periods",
+    "description": "Mehrere Punkte -> ein Punkt",
+    "type": "regex",
+    "pattern": "\\.(?:\\s*\\.)+",
+    "replacement": ".",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-multiple-exclamation",
+    "description": "Mehrere Ausrufezeichen -> eins",
+    "type": "regex",
+    "pattern": "!(?:\\s*!)+",
+    "replacement": "!",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-multiple-question",
+    "description": "Mehrere Fragezeichen -> eins",
+    "type": "regex",
+    "pattern": "\\?(?:\\s*\\?)+",
+    "replacement": "?",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-multiple-colons",
+    "description": "Mehrere Doppelpunkte -> einer",
+    "type": "regex",
+    "pattern": ":(?:\\s*:)+",
+    "replacement": ":",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-multiple-semicolons",
+    "description": "Mehrere Semikolons -> eins",
+    "type": "regex",
+    "pattern": ";(?:\\s*;)+",
+    "replacement": ";",
+    "priority": 10,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-space-before-punct",
+    "description": "Leerzeichen vor Satzzeichen entfernen",
+    "type": "regex",
+    "pattern": "\\s+([.,!?;:])",
+    "replacement": "$1",
+    "priority": 5,
+    "enabled": true
+  },
+  {
+    "id": "de-cleanup-space-after-punct",
+    "description": "Leerzeichen nach Satzzeichen sicherstellen",
+    "type": "regex",
+    "pattern": "([.,!?;:])([A-Za-zÄÖÜäöüß])",
+    "replacement": "$1 $2",
+    "priority": 4,
+    "enabled": true
+  },
+  {
+    "id": "de-normalize-whitespace",
+    "description": "Mehrere Leerzeichen -> eins",
+    "type": "function",
+    "pattern": "normalize_whitespace",
+    "priority": 1,
+    "enabled": true
+  },
+  {
+    "id": "de-trim",
+    "description": "Whitespace am Anfang/Ende entfernen",
+    "type": "function",
+    "pattern": "trim",
+    "priority": 0,
+    "enabled": true
+  }
+]

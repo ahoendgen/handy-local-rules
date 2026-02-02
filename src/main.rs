@@ -54,10 +54,6 @@ enum Command {
         /// Port to listen on (overrides config file)
         #[arg(short, long)]
         port: Option<u16>,
-
-        /// API key for authentication (overrides config file)
-        #[arg(short, long, env = "API_KEY")]
-        api_key: Option<String>,
     },
 
     /// Transform text using rules (CLI mode)
@@ -86,7 +82,7 @@ async fn main() -> anyhow::Result<()> {
     let config = load_config(&args.config);
 
     // Merge global CLI args
-    let config = config.merge_with_args(None, None, args.rules, None, args.log_level);
+    let config = config.merge_with_args(None, None, args.rules, args.log_level);
 
     // Initialize logging
     tracing_subscriber::fmt()
@@ -97,12 +93,8 @@ async fn main() -> anyhow::Result<()> {
 
     // Handle command
     match args.command {
-        Some(Command::Serve {
-            host,
-            port,
-            api_key,
-        }) => {
-            let config = config.merge_with_args(host, port, None, api_key, None);
+        Some(Command::Serve { host, port }) => {
+            let config = config.merge_with_args(host, port, None, None);
             run_server(config).await
         },
         Some(Command::Transform { text, stdin }) => run_transform(&config, text, stdin),
@@ -158,7 +150,6 @@ async fn run_server(config: Config) -> anyhow::Result<()> {
         &config.host,
         config.port,
         &config.get_rules_paths(),
-        config.api_key,
         config.enable_shell_rules,
     )
     .await

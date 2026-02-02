@@ -6,11 +6,6 @@ use utoipa::ToSchema;
 /// Chat completion request (OpenAI-compatible)
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ChatCompletionRequest {
-    /// Model name (ignored, always uses local rules)
-    #[serde(default)]
-    #[schema(example = "local-rules")]
-    pub model: Option<String>,
-
     /// Chat messages
     #[serde(default)]
     pub messages: Option<Vec<Message>>,
@@ -94,7 +89,6 @@ mod tests {
     #[test]
     fn test_extract_from_messages() {
         let request = ChatCompletionRequest {
-            model: None,
             messages: Some(vec![
                 Message {
                     role: "system".to_string(),
@@ -119,7 +113,6 @@ mod tests {
     #[test]
     fn test_extract_from_prompt() {
         let request = ChatCompletionRequest {
-            model: None,
             messages: None,
             prompt: Some("Test prompt".to_string()),
             input: None,

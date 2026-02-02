@@ -1,0 +1,245 @@
+[
+  {
+    "id": "de-punkt",
+    "description": "Punkt -> .",
+    "type": "regex",
+    "pattern": "(?i)\\bpunkt\\b",
+    "replacement": ".",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-komma",
+    "description": "Komma -> ,",
+    "type": "regex",
+    "pattern": "(?i)\\bkomma\\b",
+    "replacement": ",",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-fragezeichen",
+    "description": "Fragezeichen -> ?",
+    "type": "regex",
+    "pattern": "(?i)\\bfragezeichen\\b",
+    "replacement": "?",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-ausrufezeichen",
+    "description": "Ausrufezeichen -> !",
+    "type": "regex",
+    "pattern": "(?i)\\bausrufezeichen\\b",
+    "replacement": "!",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-doppelpunkt",
+    "description": "Doppelpunkt -> :",
+    "type": "regex",
+    "pattern": "(?i)\\bdoppelpunkt\\b",
+    "replacement": ":",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-semikolon",
+    "description": "Semikolon/Strichpunkt -> ;",
+    "type": "regex",
+    "pattern": "(?i)\\b(semikolon|strichpunkt)\\b",
+    "replacement": ";",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-anfuehrungszeichen",
+    "description": "Anführungszeichen -> \"",
+    "type": "regex",
+    "pattern": "(?i)\\banf(ü|ue)hrungszeichen\\b",
+    "replacement": "\"",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-bindestrich",
+    "description": "Bindestrich -> -",
+    "type": "regex",
+    "pattern": "(?i)\\bbindestrich\\b",
+    "replacement": "-",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-gedankenstrich",
+    "description": "Gedankenstrich -> –",
+    "type": "regex",
+    "pattern": "(?i)\\bgedankenstrich\\b",
+    "replacement": "–",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-klammer-auf",
+    "description": "Klammer auf -> (",
+    "type": "regex",
+    "pattern": "(?i)\\bklammer auf\\b",
+    "replacement": "(",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-klammer-zu",
+    "description": "Klammer zu -> )",
+    "type": "regex",
+    "pattern": "(?i)\\bklammer zu\\b",
+    "replacement": ")",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-eckige-klammer-auf",
+    "description": "Eckige Klammer auf -> [",
+    "type": "regex",
+    "pattern": "(?i)\\beckige klammer auf\\b",
+    "replacement": "[",
+    "priority": 110,
+    "enabled": true
+  },
+  {
+    "id": "de-eckige-klammer-zu",
+    "description": "Eckige Klammer zu -> ]",
+    "type": "regex",
+    "pattern": "(?i)\\beckige klammer zu\\b",
+    "replacement": "]",
+    "priority": 110,
+    "enabled": true
+  },
+  {
+    "id": "de-geschweifte-klammer-auf",
+    "description": "Geschweifte Klammer auf -> {",
+    "type": "regex",
+    "pattern": "(?i)\\bgeschweifte klammer auf\\b",
+    "replacement": "{",
+    "priority": 110,
+    "enabled": true
+  },
+  {
+    "id": "de-geschweifte-klammer-zu",
+    "description": "Geschweifte Klammer zu -> }",
+    "type": "regex",
+    "pattern": "(?i)\\bgeschweifte klammer zu\\b",
+    "replacement": "}",
+    "priority": 110,
+    "enabled": true
+  },
+  {
+    "id": "de-schraegstrich",
+    "description": "Schrägstrich -> /",
+    "type": "regex",
+    "pattern": "(?i)\\bschr(ä|ae)gstrich\\b",
+    "replacement": "/",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-backslash",
+    "description": "Backslash -> \\",
+    "type": "regex",
+    "pattern": "(?i)\\bbackslash\\b",
+    "replacement": "\\",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-at-zeichen",
+    "description": "At-Zeichen/Klammeraffe -> @",
+    "type": "regex",
+    "pattern": "(?i)\\b(at[- ]?zeichen|klammeraffe)\\b",
+    "replacement": "@",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-unterstrich",
+    "description": "Unterstrich -> _",
+    "type": "regex",
+    "pattern": "(?i)\\bunterstrich\\b",
+    "replacement": "_",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-sternchen",
+    "description": "Sternchen -> *",
+    "type": "regex",
+    "pattern": "(?i)\\bsternchen\\b",
+    "replacement": "*",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-raute",
+    "description": "Raute/Hashtag -> #",
+    "type": "regex",
+    "pattern": "(?i)\\b(raute|hashtag)\\b",
+    "replacement": "#",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-und-zeichen",
+    "description": "Und-Zeichen -> &",
+    "type": "regex",
+    "pattern": "(?i)\\b(und[- ]?zeichen|kaufmanns[- ]?und)\\b",
+    "replacement": "&",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-prozent",
+    "description": "Prozent -> %",
+    "type": "regex",
+    "pattern": "(?i)\\bprozent(zeichen)?\\b",
+    "replacement": "%",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-euro",
+    "description": "Euro -> €",
+    "type": "regex",
+    "pattern": "(?i)\\beuro(zeichen)?\\b",
+    "replacement": "€",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-dollar",
+    "description": "Dollar -> $",
+    "type": "regex",
+    "pattern": "(?i)\\bdollar(zeichen)?\\b",
+    "replacement": "$",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-neue-zeile",
+    "description": "Neue Zeile -> \\n",
+    "type": "regex",
+    "pattern": "(?i)\\bneue zeile\\b",
+    "replacement": "\n",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "id": "de-neuer-absatz",
+    "description": "Neuer Absatz -> \\n\\n",
+    "type": "regex",
+    "pattern": "(?i)\\bneuer absatz\\b",
+    "replacement": "\n\n",
+    "priority": 100,
+    "enabled": true
+  }
+]

@@ -5,4 +5,3 @@ mod loader;
 mod types;
 
 pub use engine::RuleEngine;
-pub use types::Rule;

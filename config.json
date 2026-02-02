@@ -1,0 +1,6 @@
+{
+  "host": "127.0.0.1",
+  "port": 61234,
+  "rules_paths": ["rules/de/satzzeichen.json", "rules/general/cleanup.json"],
+  "log_level": "info"
+}

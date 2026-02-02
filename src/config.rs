@@ -10,9 +10,6 @@ const CONFIG_DIR_NAME: &str = ".handy-local-rules";
 /// Default config file name
 const CONFIG_FILE_NAME: &str = "config.json";
 
-/// Default rules file name
-const RULES_FILE_NAME: &str = "rules.json";
-
 /// Get the default config directory (~/.handy-local-rules/)
 pub fn get_config_dir() -> Option<PathBuf> {
     dirs::home_dir().map(|home| home.join(CONFIG_DIR_NAME))
@@ -21,11 +18,6 @@ pub fn get_config_dir() -> Option<PathBuf> {
 /// Get the default config file path (~/.handy-local-rules/config.json)
 pub fn get_default_config_path() -> Option<PathBuf> {
     get_config_dir().map(|dir| dir.join(CONFIG_FILE_NAME))
-}
-
-/// Get the default rules file path (~/.handy-local-rules/rules.json)
-pub fn get_default_rules_path() -> Option<PathBuf> {
-    get_config_dir().map(|dir| dir.join(RULES_FILE_NAME))
 }
 
 /// Find config file in standard locations (in order of priority):
@@ -56,73 +48,6 @@ pub fn find_config_file(explicit_path: Option<&Path>) -> Option<PathBuf> {
     None
 }
 
-/// Find rules files in standard locations (in order of priority):
-/// Returns paths that exist. Checks:
-/// 1. Explicitly specified paths (from CLI)
-/// 2. rules.json in current directory
-/// 3. ~/.handy-local-rules/rules.json
-/// 4. ~/.handy-local-rules/*.json (all JSON files in config dir)
-pub fn find_rules_paths(explicit_paths: &[String]) -> Vec<String> {
-    let mut paths = Vec::new();
-
-    // 1. Add explicit paths first (they take priority)
-    for path in explicit_paths {
-        // Expand paths relative to home dir if they start with ~/
-        let expanded = if path.starts_with("~/") {
-            if let Some(home) = dirs::home_dir() {
-                home.join(&path[2..]).to_string_lossy().to_string()
-            } else {
-                path.clone()
-            }
-        } else {
-            path.clone()
-        };
-        paths.push(expanded);
-    }
-
-    // If no explicit paths, check default locations
-    if explicit_paths.is_empty()
-        || (explicit_paths.len() == 1 && explicit_paths[0] == RULES_FILE_NAME)
-    {
-        // 2. Current directory
-        let cwd_rules = Path::new(RULES_FILE_NAME);
-        if cwd_rules.exists() && !paths.contains(&RULES_FILE_NAME.to_string()) {
-            paths.push(RULES_FILE_NAME.to_string());
-        }
-
-        // 3. Home directory rules file
-        if let Some(home_rules) = get_default_rules_path() {
-            if home_rules.exists() {
-                let path_str = home_rules.to_string_lossy().to_string();
-                if !paths.contains(&path_str) {
-                    paths.push(path_str);
-                }
-            }
-        }
-
-        // 4. All JSON files in home config dir
-        if let Some(config_dir) = get_config_dir() {
-            if config_dir.exists() {
-                let glob_pattern = config_dir.join("*.json").to_string_lossy().to_string();
-                // Only add glob if there might be additional files
-                if !paths.contains(&glob_pattern) {
-                    paths.push(glob_pattern);
-                }
-            }
-        }
-    }
-
-    // Remove duplicates while preserving order
-    let mut unique_paths = Vec::new();
-    for path in paths {
-        if !unique_paths.contains(&path) {
-            unique_paths.push(path);
-        }
-    }
-
-    unique_paths
-}
-
 /// Server configuration
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
@@ -143,21 +68,9 @@ pub struct Config {
     #[serde(default = "default_rules_paths", alias = "rules_path")]
     pub rules_paths: RulesPaths,
 
-    /// API key for authentication (optional)
-    #[serde(default)]
-    pub api_key: Option<String>,
-
     /// Log level (trace, debug, info, warn, error)
     #[serde(default = "default_log_level")]
     pub log_level: String,
-
-    /// Maximum transformation log entries to keep
-    #[serde(default = "default_max_log_entries")]
-    pub max_log_entries: usize,
-
-    /// Enable CORS (cross-origin requests)
-    #[serde(default = "default_cors_enabled")]
-    pub cors_enabled: bool,
 
     /// Enable shell rules (security risk - disabled by default)
     /// Shell rules can execute arbitrary commands on your system.
@@ -206,24 +119,13 @@ fn default_log_level() -> String {
     "info".to_string()
 }
 
-fn default_max_log_entries() -> usize {
-    1000
-}
-
-fn default_cors_enabled() -> bool {
-    true
-}
-
 impl Default for Config {
     fn default() -> Self {
         Self {
             host: default_host(),
             port: default_port(),
             rules_paths: default_rules_paths(),
-            api_key: None,
             log_level: default_log_level(),
-            max_log_entries: default_max_log_entries(),
-            cors_enabled: default_cors_enabled(),
             enable_shell_rules: false,
         }
     }
@@ -237,14 +139,6 @@ impl Config {
         Ok(config)
     }
 
-    /// Load configuration from file if it exists, otherwise use defaults
-    pub fn load_or_default<P: AsRef<Path>>(path: P) -> Self {
-        match Self::load(path) {
-            Ok(config) => config,
-            Err(_) => Self::default(),
-        }
-    }
-
     /// Get rules paths as Vec<String>
     pub fn get_rules_paths(&self) -> Vec<String> {
         self.rules_paths.to_vec()
@@ -256,7 +150,6 @@ impl Config {
         host: Option<String>,
         port: Option<u16>,
         rules: Option<String>,
-        api_key: Option<String>,
         log_level: Option<String>,
     ) -> Self {
         if let Some(h) = host {
@@ -270,9 +163,6 @@ impl Config {
             let mut paths = vec![r];
             paths.extend(self.rules_paths.to_vec());
             self.rules_paths = RulesPaths::Multiple(paths);
-        }
-        if api_key.is_some() {
-            self.api_key = api_key;
         }
         if let Some(l) = log_level {
             self.log_level = l;
@@ -330,7 +220,6 @@ mod tests {
             Some("0.0.0.0".to_string()),
             Some(3000),
             Some("extra-rules.json".to_string()),
-            None,
             None,
         );
 

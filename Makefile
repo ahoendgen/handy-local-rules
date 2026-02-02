@@ -1,7 +1,7 @@
 # Makefile for handy-local-rules
 # Common development commands
 
-.PHONY: all setup build release check fmt lint test clean run help
+.PHONY: all setup build release check fmt lint test clean run dev help
 
 # Default target
 all: check
@@ -61,11 +61,15 @@ clean:
 
 # Run the server (debug)
 run:
-	cargo run -- --port 8080 --rules rules.json
+	cargo run -- serve
 
 # Run the server (release)
 run-release:
-	cargo run --release -- --port 8080 --rules rules.json
+	cargo run --release -- serve
+
+# Development mode with hot-reload
+dev:
+	cargo watch -x 'run -- serve'
 
 # Watch for changes and run checks
 watch:
@@ -106,6 +110,7 @@ help:
 	@echo "  clean        - Clean build artifacts"
 	@echo "  run          - Run server (debug)"
 	@echo "  run-release  - Run server (release)"
+	@echo "  dev          - Development mode with hot-reload"
 	@echo "  watch        - Watch and run checks on changes"
 	@echo "  docs         - Generate documentation"
 	@echo "  audit        - Security audit"

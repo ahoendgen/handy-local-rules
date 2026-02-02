@@ -146,27 +146,6 @@ impl RuleEngine {
         Ok(Some(new_state))
     }
 
-    /// Set a rule's enabled state explicitly
-    /// Returns the new enabled state, or None if rule not found
-    pub fn set_rule_enabled(&self, rule_id: &str, enabled: bool) -> Option<bool> {
-        let mut rules = self.rules.write().unwrap();
-
-        for rule in rules.iter_mut() {
-            if rule.id == rule_id {
-                rule.enabled = enabled;
-                tracing::info!(
-                    "Rule '{}' is now {}",
-                    rule_id,
-                    if enabled { "enabled" } else { "disabled" }
-                );
-                return Some(enabled);
-            }
-        }
-
-        tracing::warn!("Rule '{}' not found", rule_id);
-        None
-    }
-
     /// Get recent transformation logs
     pub fn get_transformation_log(&self) -> Vec<TransformationLog> {
         self.transformation_log
@@ -272,7 +251,7 @@ impl RuleEngine {
         &self,
         command: &str,
         input: &str,
-        timeout: Duration,
+        _timeout: Duration, // TODO: implement timeout handling
     ) -> Result<String, AppError> {
         let mut child = Command::new("sh")
             .arg("-c")
