@@ -62,8 +62,8 @@ pub async fn chat_completions(
 
     tracing::debug!("Output: {}", processed_text);
 
-    // Build response
-    let response = ChatCompletionResponse::new(processed_text);
+    // Build response with deterministic ID based on input
+    let response = ChatCompletionResponse::new(&input_text, processed_text);
 
     Ok(Json(response))
 }
@@ -177,7 +177,7 @@ pub async fn toggle_rule(
     Path(rule_id): Path<String>,
 ) -> Result<Json<RuleToggleResponse>, StatusCode> {
     match state.rule_engine.toggle_rule(&rule_id) {
-        Some(enabled) => {
+        Ok(Some(enabled)) => {
             let status = if enabled { "enabled" } else { "disabled" };
             Ok(Json(RuleToggleResponse {
                 id: rule_id.clone(),
@@ -185,6 +185,10 @@ pub async fn toggle_rule(
                 message: format!("Rule '{}' is now {}", rule_id, status),
             }))
         },
-        None => Err(StatusCode::NOT_FOUND),
+        Ok(None) => Err(StatusCode::NOT_FOUND),
+        Err(e) => {
+            tracing::error!("Failed to toggle rule '{}': {}", rule_id, e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        },
     }
 }

@@ -44,21 +44,22 @@ impl ChatCompletionRequest {
     /// Extract the user content to process.
     ///
     /// Tries multiple strategies:
-    /// 1. Last user message from messages array
+    /// 1. Last user message from messages array (strict: only "user" role)
     /// 2. prompt field
     /// 3. input field
     /// 4. text field
+    ///
+    /// Note: We intentionally do NOT fall back to the last message regardless of role.
+    /// This prevents accidentally processing assistant prefills or system metadata.
     pub fn extract_user_content(&self) -> Option<String> {
-        // Strategy 1: Get last user message
+        // Strategy 1: Get last user message (strict role check)
         if let Some(messages) = &self.messages {
-            // Find the last user message
+            // Find the last user message - only accept role == "user"
             if let Some(msg) = messages.iter().rev().find(|m| m.role == "user") {
                 return Some(msg.content.clone());
             }
-            // Fallback: use last message regardless of role
-            if let Some(msg) = messages.last() {
-                return Some(msg.content.clone());
-            }
+            // No fallback to last message - this could be an assistant prefill
+            // or system metadata which we should not process
         }
 
         // Strategy 2: prompt field

@@ -5,7 +5,7 @@ use super::types::{BuiltinFunction, Rule, RuleType};
 use crate::error::AppError;
 use notify::RecommendedWatcher;
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -34,7 +34,8 @@ pub struct RuleEngine {
     regex_cache: RwLock<HashMap<String, Regex>>,
 
     /// Transformation log (most recent transformations)
-    transformation_log: RwLock<Vec<TransformationLog>>,
+    /// Uses VecDeque for efficient FIFO operations without memory fragmentation
+    transformation_log: RwLock<VecDeque<TransformationLog>>,
 
     /// Maximum log entries to keep
     max_log_entries: usize,
@@ -82,7 +83,7 @@ impl RuleEngine {
             rules_paths: paths.to_vec(),
             rules: RwLock::new(rules),
             regex_cache: RwLock::new(HashMap::new()),
-            transformation_log: RwLock::new(Vec::new()),
+            transformation_log: RwLock::new(VecDeque::new()),
             max_log_entries: 1000,
             enable_shell_rules,
             watchers: Mutex::new(Vec::new()),
@@ -106,7 +107,8 @@ impl RuleEngine {
 
     /// Toggle a rule's enabled state and persist to file
     /// Returns the new enabled state, or None if rule not found
-    pub fn toggle_rule(&self, rule_id: &str) -> Option<bool> {
+    /// Returns Err if persistence fails (to avoid "gaslighting" the user)
+    pub fn toggle_rule(&self, rule_id: &str) -> Result<Option<bool>, AppError> {
         let (new_state, source_file) = {
             let mut rules = self.rules.write().unwrap();
 
@@ -122,7 +124,7 @@ impl RuleEngine {
                 Some((state, source)) => (state, source),
                 None => {
                     tracing::warn!("Rule '{}' not found", rule_id);
-                    return None;
+                    return Ok(None);
                 },
             }
         };
@@ -133,17 +135,15 @@ impl RuleEngine {
             if new_state { "enabled" } else { "disabled" }
         );
 
-        // Persist change to file
+        // Persist change to file - propagate errors to caller
         if let Some(ref path) = source_file {
             let rules = self.rules.read().unwrap();
-            if let Err(e) = loader::save_rules_to_file(path, &rules) {
-                tracing::error!("Failed to persist rule change: {}", e);
-            }
+            loader::save_rules_to_file(path, &rules)?;
         } else {
             tracing::warn!("Rule '{}' has no source file, cannot persist", rule_id);
         }
 
-        Some(new_state)
+        Ok(Some(new_state))
     }
 
     /// Set a rule's enabled state explicitly
@@ -169,7 +169,12 @@ impl RuleEngine {
 
     /// Get recent transformation logs
     pub fn get_transformation_log(&self) -> Vec<TransformationLog> {
-        self.transformation_log.read().unwrap().clone()
+        self.transformation_log
+            .read()
+            .unwrap()
+            .iter()
+            .cloned()
+            .collect()
     }
 
     /// Clear transformation log
@@ -180,13 +185,19 @@ impl RuleEngine {
     /// Apply all enabled rules to the input text
     /// Rules are pre-sorted by priority during load, so this is O(N) not O(N log N)
     pub fn apply(&self, text: &str) -> String {
-        let rules = self.rules.read().unwrap();
-        let cache = self.regex_cache.read().unwrap();
+        // Clone rules and cache to release locks before processing
+        // This prevents slow shell commands from blocking other requests
+        let (active_rules, cache) = {
+            let rules = self.rules.read().unwrap();
+            let cache = self.regex_cache.read().unwrap();
+            let filtered: Vec<Rule> = rules.iter().filter(|r| r.enabled).cloned().collect();
+            (filtered, cache.clone())
+        };
 
         let mut result = text.to_string();
 
         // Rules are pre-sorted by priority (descending) during load
-        for rule in rules.iter().filter(|r| r.enabled) {
+        for rule in active_rules.iter() {
             // Skip shell rules if not enabled (security)
             if matches!(rule.rule_type, RuleType::Shell) && !self.enable_shell_rules {
                 tracing::trace!("Skipping shell rule '{}' (shell rules disabled)", rule.id);
@@ -196,9 +207,9 @@ impl RuleEngine {
             let before = result.clone();
 
             result = match rule.rule_type {
-                RuleType::Regex => self.apply_regex_rule(rule, &result, &cache),
+                RuleType::Regex => Self::apply_regex_rule(rule, &result, &cache),
                 RuleType::Shell => self.apply_shell_rule(rule, &result),
-                RuleType::Function => self.apply_function_rule(rule, &result),
+                RuleType::Function => Self::apply_function_rule(rule, &result),
             };
 
             // Log transformation
@@ -235,7 +246,7 @@ impl RuleEngine {
     }
 
     /// Apply a regex-based rule
-    fn apply_regex_rule(&self, rule: &Rule, text: &str, cache: &HashMap<String, Regex>) -> String {
+    fn apply_regex_rule(rule: &Rule, text: &str, cache: &HashMap<String, Regex>) -> String {
         if let Some(regex) = cache.get(&rule.id) {
             regex.replace_all(text, &rule.replacement).to_string()
         } else {
@@ -298,7 +309,7 @@ impl RuleEngine {
     }
 
     /// Apply a built-in function rule
-    fn apply_function_rule(&self, rule: &Rule, text: &str) -> String {
+    fn apply_function_rule(rule: &Rule, text: &str) -> String {
         match BuiltinFunction::from_name(&rule.pattern) {
             Some(func) => func.apply(text),
             None => {
@@ -312,12 +323,11 @@ impl RuleEngine {
     fn log_transformation(&self, log: TransformationLog) {
         let mut logs = self.transformation_log.write().unwrap();
 
-        logs.push(log);
+        logs.push_back(log);
 
-        // Trim if too many entries
-        if logs.len() > self.max_log_entries {
-            let drain_count = logs.len() - self.max_log_entries;
-            logs.drain(0..drain_count);
+        // Trim oldest entries if over limit (efficient with VecDeque)
+        while logs.len() > self.max_log_entries {
+            logs.pop_front();
         }
     }
 

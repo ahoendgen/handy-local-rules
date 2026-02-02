@@ -4,6 +4,13 @@ use serde::Serialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
+/// Namespace UUID for generating deterministic response IDs
+/// This is a custom namespace for handy-local-rules
+const RESPONSE_ID_NAMESPACE: Uuid = Uuid::from_bytes([
+    0x68, 0x61, 0x6e, 0x64, 0x79, 0x2d, 0x6c, 0x6f, // "handy-lo"
+    0x63, 0x61, 0x6c, 0x2d, 0x72, 0x75, 0x6c, 0x65, // "cal-rule"
+]);
+
 /// Chat completion response (OpenAI-compatible)
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ChatCompletionResponse {
@@ -19,9 +26,14 @@ pub struct ChatCompletionResponse {
 
 impl ChatCompletionResponse {
     /// Create a new response with the given content
-    pub fn new(content: String) -> Self {
+    /// Uses deterministic ID based on input content for caching/debugging
+    pub fn new(input: &str, content: String) -> Self {
+        // Generate deterministic UUID based on input content
+        // This helps with client-side caching and debugging
+        let id = Uuid::new_v5(&RESPONSE_ID_NAMESPACE, input.as_bytes());
+
         Self {
-            id: format!("local-{}", Uuid::new_v4()),
+            id: format!("local-{}", id),
             object: "chat.completion".to_string(),
             choices: vec![Choice {
                 index: 0,
