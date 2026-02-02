@@ -1,5 +1,14 @@
 [
   {
+    "id": "cleanup-trailing-ellipsis",
+    "description": "... am Ende entfernen (Speech-to-Text Artefakt)",
+    "type": "regex",
+    "pattern": "\\.{3}$",
+    "replacement": "",
+    "priority": 200,
+    "enabled": true
+  },
+  {
     "id": "cleanup-comma-question",
     "description": ",? -> ? (Komma vor Fragezeichen)",
     "type": "regex",
@@ -36,11 +45,20 @@
     "enabled": true
   },
   {
+    "id": "cleanup-period-comma",
+    "description": "., -> . (Punkt gefolgt von Komma)",
+    "type": "regex",
+    "pattern": "\\.\\s*,",
+    "replacement": ".",
+    "priority": 15,
+    "enabled": true
+  },
+  {
     "id": "cleanup-comma-period",
-    "description": ",. -> , (Komma gefolgt von Punkt)",
+    "description": ",. -> . (Komma gefolgt von Punkt)",
     "type": "regex",
     "pattern": ",\\s*\\.",
-    "replacement": ",",
+    "replacement": ".",
     "priority": 15,
     "enabled": true
   },
