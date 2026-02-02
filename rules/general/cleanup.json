@@ -1,5 +1,23 @@
 [
   {
+    "id": "cleanup-comma-question",
+    "description": ",? -> ? (Komma vor Fragezeichen)",
+    "type": "regex",
+    "pattern": ",\\s*\\?",
+    "replacement": "?",
+    "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-comma-exclamation",
+    "description": ",! -> ! (Komma vor Ausrufezeichen)",
+    "type": "regex",
+    "pattern": ",\\s*!",
+    "replacement": "!",
+    "priority": 15,
+    "enabled": true
+  },
+  {
     "id": "cleanup-question-period",
     "description": "?. -> ? (Fragezeichen gefolgt von Punkt)",
     "type": "regex",
@@ -42,6 +60,33 @@
     "pattern": "-\\s*\\.",
     "replacement": "-",
     "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-ellipsis-protect",
+    "description": "... -> … (Ellipsis schützen)",
+    "type": "regex",
+    "pattern": "\\.{3,}",
+    "replacement": "…",
+    "priority": 3,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-double-period",
+    "description": ".. -> . (doppelte Punkte)",
+    "type": "regex",
+    "pattern": "\\.{2}",
+    "replacement": ".",
+    "priority": 2,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-ellipsis-restore",
+    "description": "… -> ... (Ellipsis wiederherstellen)",
+    "type": "regex",
+    "pattern": "…",
+    "replacement": "...",
+    "priority": 1,
     "enabled": true
   },
   {
@@ -112,7 +157,7 @@
     "description": "Mehrere Leerzeichen -> eins",
     "type": "function",
     "pattern": "normalize_whitespace",
-    "priority": 1,
+    "priority": 0,
     "enabled": true
   },
   {
@@ -120,7 +165,7 @@
     "description": "Whitespace am Anfang/Ende entfernen",
     "type": "function",
     "pattern": "trim",
-    "priority": 0,
+    "priority": -1,
     "enabled": true
   }
 ]

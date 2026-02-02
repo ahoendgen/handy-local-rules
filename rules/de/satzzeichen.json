@@ -1,5 +1,14 @@
 [
   {
+    "id": "de-auslassungspunkte",
+    "description": "Punkt Punkt Punkt / drei Punkte -> ...",
+    "type": "regex",
+    "pattern": "(?i)\\bpunkt[,\\s]+punkt[,\\s]+punkt\\b|\\bdrei punkte\\b|\\bauslassungspunkte\\b",
+    "replacement": "...",
+    "priority": 110,
+    "enabled": true
+  },
+  {
     "id": "de-punkt",
     "description": "Punkt -> .",
     "type": "regex",
