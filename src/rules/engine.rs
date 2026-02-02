@@ -336,13 +336,71 @@ impl RuleEngine {
     /// Watchers are stored in the engine to keep them alive
     pub fn watch_for_changes(self: Arc<Self>) -> Result<(), AppError> {
         let mut watchers_guard = self.watchers.lock().unwrap();
+        let mut watched_paths = std::collections::HashSet::new();
 
         for path in &self.rules_paths {
-            let watcher = loader::watch_rules_file(PathBuf::from(path), self.clone())?;
-            watchers_guard.push(watcher);
+            // Resolve glob patterns to actual paths to watch
+            let paths_to_watch = Self::resolve_watch_paths(path);
+
+            for watch_path in paths_to_watch {
+                // Avoid watching the same path twice
+                if watched_paths.contains(&watch_path) {
+                    continue;
+                }
+                watched_paths.insert(watch_path.clone());
+
+                match loader::watch_rules_file(watch_path.clone(), self.clone()) {
+                    Ok(watcher) => {
+                        tracing::debug!("Watching: {}", watch_path.display());
+                        watchers_guard.push(watcher);
+                    },
+                    Err(e) => {
+                        tracing::warn!("Could not watch {}: {}", watch_path.display(), e);
+                    },
+                }
+            }
         }
 
         Ok(())
+    }
+
+    /// Resolve a path (which may be a glob pattern) to actual paths to watch
+    fn resolve_watch_paths(path: &str) -> Vec<PathBuf> {
+        let path_buf = PathBuf::from(path);
+
+        // If it's an existing file, watch it directly
+        if path_buf.is_file() {
+            return vec![path_buf];
+        }
+
+        // If it's an existing directory, watch it
+        if path_buf.is_dir() {
+            return vec![path_buf];
+        }
+
+        // Try as glob pattern - watch matching files' parent directories
+        if let Ok(entries) = glob::glob(path) {
+            let mut dirs = std::collections::HashSet::new();
+            for entry in entries.flatten() {
+                if let Some(parent) = entry.parent() {
+                    dirs.insert(parent.to_path_buf());
+                }
+            }
+            if !dirs.is_empty() {
+                return dirs.into_iter().collect();
+            }
+        }
+
+        // Fallback: try to extract base directory from glob pattern
+        // e.g., "rules/**/*.json" -> "rules"
+        if let Some(base) = path.split("**").next() {
+            let base_path = PathBuf::from(base.trim_end_matches('/'));
+            if base_path.is_dir() {
+                return vec![base_path];
+            }
+        }
+
+        vec![]
     }
 
     /// Compile all regex patterns and cache them
