@@ -4,6 +4,8 @@
 [![Rust](https://img.shields.io/badge/Rust-1.85+-orange.svg)](https://www.rust-lang.org/)
 [![OpenAI Compatible](https://img.shields.io/badge/OpenAI-Compatible-green.svg)](https://platform.openai.com/docs/api-reference/chat)
 
+> **Beta:** This project is in early development. APIs and rule formats may change.
+
 A lightweight, local HTTP server and CLI tool that provides an OpenAI-compatible Chat Completion API for deterministic text transformations.
 
 ## Why This Exists

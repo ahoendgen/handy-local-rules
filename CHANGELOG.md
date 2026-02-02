@@ -2,7 +2,7 @@
 
 All notable changes to handy-local-rules will be documented in this file.
 
-## [0.1.0] - 2026-02-02
+## [0.0.1] - 2026-02-02
 
 ### Features
 

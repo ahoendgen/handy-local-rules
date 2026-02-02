@@ -10,9 +10,7 @@ Release a new version with automated changelog generation from git commits.
 
 ## Context
 
-First, locate the project configuration:
-
-@Cargo.toml @package.json @CHANGELOG.md
+Read the current version from Cargo.toml and package.json, and review CHANGELOG.md for the last release.
 
 ## Your Task
 
@@ -65,9 +63,11 @@ fi
 
 ### 5. Update Version in Cargo.toml and package.json
 
-- Update the `version = "x.y.z"` line in Cargo.toml
-- Update the `"version": "x.y.z"` line in package.json
-- Both versions must match
+```bash
+./scripts/set-version.sh {version}
+```
+
+This script updates both Cargo.toml and package.json to keep versions in sync.
 
 ### 6. Show Preview and Confirm
 
