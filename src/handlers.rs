@@ -6,10 +6,10 @@ use crate::models::{
 };
 use crate::server::AppState;
 use axum::{
+    Json,
     extract::{Path, State},
     http::StatusCode,
     response::Html,
-    Json,
 };
 
 /// Health check endpoint

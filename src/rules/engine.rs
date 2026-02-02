@@ -410,6 +410,7 @@ mod tests {
             ignore_case: false,
             timeout_ms: 5000,
             stop_on_match: false,
+            source_file: None,
         }];
 
         let file = create_test_rules_file(&rules);
@@ -431,6 +432,7 @@ mod tests {
             ignore_case: false,
             timeout_ms: 5000,
             stop_on_match: false,
+            source_file: None,
         }];
 
         let file = create_test_rules_file(&rules);
@@ -452,6 +454,7 @@ mod tests {
             ignore_case: false,
             timeout_ms: 5000,
             stop_on_match: false,
+            source_file: None,
         }];
 
         let file = create_test_rules_file(&rules);
@@ -474,6 +477,7 @@ mod tests {
             ignore_case: false,
             timeout_ms: 5000,
             stop_on_match: false,
+            source_file: None,
         }];
 
         let file = create_test_rules_file(&rules);

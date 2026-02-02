@@ -347,7 +347,7 @@ mod tests {
     fn test_default_config() {
         let config = Config::default();
         assert_eq!(config.host, "127.0.0.1");
-        assert_eq!(config.port, 8080);
+        assert_eq!(config.port, 61234);
         assert_eq!(config.get_rules_paths(), vec!["rules.json"]);
     }
 }

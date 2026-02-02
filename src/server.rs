@@ -7,7 +7,7 @@ use crate::models::{
     TransformationLogEntry, TransformationLogResponse, Usage,
 };
 use crate::rules::RuleEngine;
-use axum::{routing::delete, routing::get, routing::post, Router};
+use axum::{Router, routing::delete, routing::get, routing::post};
 use std::net::{SocketAddr, TcpListener};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;

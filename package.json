@@ -17,7 +17,7 @@
     "prettier": "^3.0.0"
   },
   "lint-staged": {
-    "*.rs": "rustfmt --edition 2021 --check",
+    "*.rs": "rustfmt --edition 2024 --check",
     "*.md": "prettier --write",
     "*.{json,yaml,yml}": "prettier --write"
   }

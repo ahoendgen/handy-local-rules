@@ -14,7 +14,7 @@ mod models;
 mod rules;
 mod server;
 
-use crate::config::{find_config_file, get_config_dir, Config};
+use crate::config::{Config, find_config_file, get_config_dir};
 use crate::rules::RuleEngine;
 use clap::{Parser, Subcommand};
 use std::io::{self, BufRead, Write};
