@@ -59,9 +59,9 @@ pub struct Rule {
     #[serde(default = "default_timeout")]
     pub timeout_ms: u64,
 
-    /// Reserved for fuzzy matching feature
+    /// Stop processing further rules after this rule matches
     #[serde(default)]
-    pub fuzzy_key: bool,
+    pub stop_on_match: bool,
 
     /// Source file path (internal, not serialized to JSON output)
     #[serde(skip)]
@@ -164,7 +164,7 @@ mod tests {
             enabled: true,
             ignore_case: true,
             timeout_ms: 5000,
-            fuzzy_key: false,
+            stop_on_match: false,
             source_file: None,
         };
 

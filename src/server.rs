@@ -8,7 +8,7 @@ use crate::models::{
 };
 use crate::rules::RuleEngine;
 use axum::{routing::delete, routing::get, routing::post, Router};
-use std::net::SocketAddr;
+use std::net::{SocketAddr, TcpListener};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
@@ -66,15 +66,40 @@ pub struct AppState {
 )]
 pub struct ApiDoc;
 
+/// Check if a port is available for binding
+fn check_port_available(host: &str, port: u16) -> Result<(), String> {
+    let addr = format!("{}:{}", host, port);
+    match TcpListener::bind(&addr) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            let hint = if port < 1024 {
+                "Ports below 1024 require root/admin privileges."
+            } else {
+                "Another process may be using this port."
+            };
+            Err(format!(
+                "Port {} is not available on {}: {}\n\nHint: {}\n\nTry:\n  - Use a different port: --port <PORT>\n  - Find what's using the port: lsof -i :{}\n  - Kill the process using the port",
+                port, host, e, hint, port
+            ))
+        }
+    }
+}
+
 /// Run the HTTP server
 pub async fn run(
     host: &str,
     port: u16,
     rules_paths: &[String],
     api_key: Option<String>,
+    enable_shell_rules: bool,
 ) -> anyhow::Result<()> {
+    // Check if port is available before doing anything else
+    if let Err(msg) = check_port_available(host, port) {
+        anyhow::bail!(msg);
+    }
+
     // Initialize rule engine
-    let rule_engine = Arc::new(RuleEngine::new_from_paths(rules_paths)?);
+    let rule_engine = Arc::new(RuleEngine::new_from_paths(rules_paths, enable_shell_rules)?);
 
     // Start file watcher for hot-reload
     rule_engine.clone().watch_for_changes()?;

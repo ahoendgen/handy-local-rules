@@ -89,7 +89,7 @@
   },
   {
     "description": "Example shell command",
-    "enabled": true,
+    "enabled": false,
     "id": "custom-shell-example",
     "pattern": "cat | sed 's/example/EXAMPLE/g'",
     "priority": 1,

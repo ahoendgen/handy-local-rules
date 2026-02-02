@@ -3,12 +3,13 @@
 use super::loader;
 use super::types::{BuiltinFunction, Rule, RuleType};
 use crate::error::AppError;
+use notify::RecommendedWatcher;
 use regex::Regex;
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 /// Record of a single transformation
@@ -37,17 +38,40 @@ pub struct RuleEngine {
 
     /// Maximum log entries to keep
     max_log_entries: usize,
+
+    /// Whether shell rules are enabled (security feature)
+    enable_shell_rules: bool,
+
+    /// File watchers (kept alive for the lifetime of the engine)
+    #[allow(dead_code)]
+    watchers: Mutex<Vec<RecommendedWatcher>>,
 }
 
 impl RuleEngine {
     /// Create a new rule engine and load rules from the given path
-    pub fn new(rules_path: &str) -> Result<Self, AppError> {
-        Self::new_from_paths(&[rules_path.to_string()])
+    pub fn new(rules_path: &str, enable_shell_rules: bool) -> Result<Self, AppError> {
+        Self::new_from_paths(&[rules_path.to_string()], enable_shell_rules)
     }
 
     /// Create a new rule engine and load rules from multiple paths
-    pub fn new_from_paths(paths: &[String]) -> Result<Self, AppError> {
+    pub fn new_from_paths(paths: &[String], enable_shell_rules: bool) -> Result<Self, AppError> {
         let rules = loader::load_rules_from_paths(paths)?;
+
+        // Count and warn about shell rules
+        let shell_rule_count = rules.iter().filter(|r| matches!(r.rule_type, RuleType::Shell)).count();
+        if shell_rule_count > 0 {
+            if enable_shell_rules {
+                tracing::warn!(
+                    "⚠️  {} shell rule(s) loaded. Shell rules can execute arbitrary commands!",
+                    shell_rule_count
+                );
+            } else {
+                tracing::warn!(
+                    "⚠️  {} shell rule(s) found but DISABLED. Set enable_shell_rules=true to enable.",
+                    shell_rule_count
+                );
+            }
+        }
 
         tracing::info!("Loaded {} rules from {:?}", rules.len(), paths);
 
@@ -57,6 +81,8 @@ impl RuleEngine {
             regex_cache: RwLock::new(HashMap::new()),
             transformation_log: RwLock::new(Vec::new()),
             max_log_entries: 1000,
+            enable_shell_rules,
+            watchers: Mutex::new(Vec::new()),
         };
 
         // Pre-compile all regexes
@@ -145,17 +171,21 @@ impl RuleEngine {
     }
 
     /// Apply all enabled rules to the input text
+    /// Rules are pre-sorted by priority during load, so this is O(N) not O(N log N)
     pub fn apply(&self, text: &str) -> String {
         let rules = self.rules.read().unwrap();
         let cache = self.regex_cache.read().unwrap();
 
-        // Sort by priority (descending)
-        let mut sorted_rules: Vec<_> = rules.iter().filter(|r| r.enabled).collect();
-        sorted_rules.sort_by(|a, b| b.priority.cmp(&a.priority));
-
         let mut result = text.to_string();
 
-        for rule in sorted_rules {
+        // Rules are pre-sorted by priority (descending) during load
+        for rule in rules.iter().filter(|r| r.enabled) {
+            // Skip shell rules if not enabled (security)
+            if matches!(rule.rule_type, RuleType::Shell) && !self.enable_shell_rules {
+                tracing::trace!("Skipping shell rule '{}' (shell rules disabled)", rule.id);
+                continue;
+            }
+
             let before = result.clone();
 
             result = match rule.rule_type {
@@ -182,6 +212,12 @@ impl RuleEngine {
                     before,
                     result
                 );
+
+                // Stop processing if rule has stop_on_match flag
+                if rule.stop_on_match {
+                    tracing::debug!("Rule '{}' has stop_on_match=true, stopping processing", rule.id);
+                    break;
+                }
             }
         }
 
@@ -301,10 +337,15 @@ impl RuleEngine {
     }
 
     /// Start watching rules files for changes
+    /// Watchers are stored in the engine to keep them alive
     pub fn watch_for_changes(self: Arc<Self>) -> Result<(), AppError> {
+        let mut watchers_guard = self.watchers.lock().unwrap();
+
         for path in &self.rules_paths {
-            loader::watch_rules_file(std::path::PathBuf::from(path), self.clone())?;
+            let watcher = loader::watch_rules_file(PathBuf::from(path), self.clone())?;
+            watchers_guard.push(watcher);
         }
+
         Ok(())
     }
 
@@ -361,11 +402,11 @@ mod tests {
             enabled: true,
             ignore_case: false,
             timeout_ms: 5000,
-            fuzzy_key: false,
+            stop_on_match: false,
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap()).unwrap();
+        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
 
         assert_eq!(engine.apply("foo slash bar"), "foo / bar");
     }
@@ -382,11 +423,11 @@ mod tests {
             enabled: true,
             ignore_case: false,
             timeout_ms: 5000,
-            fuzzy_key: false,
+            stop_on_match: false,
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap()).unwrap();
+        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
 
         assert_eq!(engine.apply("hello world"), "HELLO WORLD");
     }
@@ -403,11 +444,12 @@ mod tests {
             enabled: true,
             ignore_case: false,
             timeout_ms: 5000,
-            fuzzy_key: false,
+            stop_on_match: false,
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap()).unwrap();
+        // Shell rules need enable_shell_rules=true
+        let engine = RuleEngine::new(file.path().to_str().unwrap(), true).unwrap();
 
         assert_eq!(engine.apply("hello"), "HELLO");
     }
@@ -424,11 +466,11 @@ mod tests {
             enabled: true,
             ignore_case: false,
             timeout_ms: 5000,
-            fuzzy_key: false,
+            stop_on_match: false,
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap()).unwrap();
+        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
 
         engine.apply("foo test");
 

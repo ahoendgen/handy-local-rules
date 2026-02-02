@@ -96,7 +96,7 @@ The application looks for configuration in `~/.handy-local-rules/`:
 ```json
 {
   "host": "127.0.0.1",
-  "port": 8080,
+  "port": 61234,
   "rules_paths": [
     "rules.json",
     "custom-rules/*.json",
@@ -153,6 +153,15 @@ make release            # Build optimized release binary
 - Use `tracing` for logging, not `println!`
 - Prefer `thiserror` for error types
 - Use `?` operator for error propagation
+
+### Git Workflow
+
+**IMPORTANT: Commits require explicit user approval.**
+
+- **NEVER** create commits automatically after completing tasks
+- **ONLY** commit when the user explicitly requests it (e.g., "commit", "add and commit")
+- If the commit instruction was not given in the immediately preceding message, use the `AskUserQuestion` tool to confirm before committing
+- When in doubt, always ask first
 
 ### Commit Messages
 
@@ -264,7 +273,7 @@ Execute shell commands (input via stdin, output via stdout):
 
 ## Dashboard UI
 
-Access the web dashboard at `http://localhost:8080/`:
+Access the web dashboard at `http://localhost:61234/`:
 
 - View all loaded rules with toggle switches to enable/disable
 - Test transformations interactively
@@ -277,10 +286,10 @@ All transformations are logged and accessible via API:
 
 ```bash
 # Get recent logs
-curl http://localhost:8080/v1/logs
+curl http://localhost:61234/v1/logs
 
 # Clear logs
-curl -X DELETE http://localhost:8080/v1/logs
+curl -X DELETE http://localhost:61234/v1/logs
 ```
 
 ## Testing

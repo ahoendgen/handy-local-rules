@@ -79,6 +79,7 @@ pub fn save_rules_to_file(path: &str, rules: &[Rule]) -> Result<(), AppError> {
 }
 
 /// Load rules from multiple sources (files, directories, or glob patterns)
+/// Rules are pre-sorted by priority (descending) for optimal apply() performance
 pub fn load_rules_from_paths(paths: &[String]) -> Result<Vec<Rule>, AppError> {
     let mut all_rules = Vec::new();
 
@@ -121,12 +122,26 @@ pub fn load_rules_from_paths(paths: &[String]) -> Result<Vec<Rule>, AppError> {
         }
     }
 
+    // Pre-sort by priority (descending) for O(N) apply() instead of O(N log N) per request
+    all_rules.sort_by(|a, b| b.priority.cmp(&a.priority));
+
     Ok(all_rules)
 }
 
 /// Watch the rules file for changes and reload when modified
-pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<(), AppError> {
+/// Returns the watcher so it can be stored (dropping it stops watching)
+pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<RecommendedWatcher, AppError> {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
     let path_clone = path.clone();
+
+    // Debounce: track last reload time to avoid rapid reloads
+    let last_reload = Arc::new(AtomicU64::new(0));
+    let last_reload_clone = last_reload.clone();
+
+    // Debounce interval in milliseconds
+    const DEBOUNCE_MS: u64 = 500;
 
     // Create watcher
     let mut watcher: RecommendedWatcher =
@@ -137,6 +152,20 @@ pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<(), Ap
                         event.kind,
                         EventKind::Modify(_) | EventKind::Create(_)
                     ) {
+                        // Debounce: check if enough time has passed since last reload
+                        let now = SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .map(|d| d.as_millis() as u64)
+                            .unwrap_or(0);
+                        let last = last_reload_clone.load(Ordering::Relaxed);
+
+                        if now - last < DEBOUNCE_MS {
+                            tracing::trace!("Debouncing file change event");
+                            return;
+                        }
+
+                        last_reload_clone.store(now, Ordering::Relaxed);
+
                         tracing::info!("Rules file changed, reloading...");
                         if let Err(e) = engine.reload() {
                             tracing::error!("Failed to reload rules: {}", e);
@@ -152,11 +181,7 @@ pub fn watch_rules_file(path: PathBuf, engine: Arc<RuleEngine>) -> Result<(), Ap
     // Watch the rules file
     watcher.watch(&path_clone, RecursiveMode::NonRecursive)?;
 
-    // Keep watcher alive by leaking it (it needs to live for the duration of the program)
-    // In a real application, you might want to store this in the AppState
-    std::mem::forget(watcher);
-
     tracing::info!("Watching {:?} for changes", path_clone);
 
-    Ok(())
+    Ok(watcher)
 }

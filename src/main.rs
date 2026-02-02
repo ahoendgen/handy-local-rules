@@ -170,12 +170,13 @@ async fn run_server(config: Config) -> anyhow::Result<()> {
         config.port,
         &config.get_rules_paths(),
         config.api_key,
+        config.enable_shell_rules,
     )
     .await
 }
 
 fn run_transform(config: &Config, text: Option<String>, stdin: bool) -> anyhow::Result<()> {
-    let engine = RuleEngine::new_from_paths(&config.get_rules_paths())?;
+    let engine = RuleEngine::new_from_paths(&config.get_rules_paths(), config.enable_shell_rules)?;
 
     if let Some(input) = text {
         // Transform provided text
@@ -205,7 +206,7 @@ fn run_transform(config: &Config, text: Option<String>, stdin: bool) -> anyhow::
 
 fn run_validate(config: &Config) -> anyhow::Result<()> {
     let paths = config.get_rules_paths();
-    match RuleEngine::new_from_paths(&paths) {
+    match RuleEngine::new_from_paths(&paths, config.enable_shell_rules) {
         Ok(engine) => {
             println!("✓ Rules files are valid");
             println!("  Loaded {} rules from {:?}", engine.rules_count(), paths);
@@ -220,7 +221,7 @@ fn run_validate(config: &Config) -> anyhow::Result<()> {
 
 fn run_list_rules(config: &Config) -> anyhow::Result<()> {
     let paths = config.get_rules_paths();
-    let engine = RuleEngine::new_from_paths(&paths)?;
+    let engine = RuleEngine::new_from_paths(&paths, config.enable_shell_rules)?;
     let rules = engine.get_rules();
 
     println!("Loaded {} rules from {:?}:\n", rules.len(), paths);

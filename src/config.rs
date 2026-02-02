@@ -150,14 +150,6 @@ pub struct Config {
     #[serde(default = "default_log_level")]
     pub log_level: String,
 
-    /// Enable fuzzy matching (experimental)
-    #[serde(default)]
-    pub enable_fuzzy: bool,
-
-    /// Fuzzy matching threshold (0.0 - 1.0)
-    #[serde(default = "default_fuzzy_threshold")]
-    pub fuzzy_threshold: f64,
-
     /// Maximum transformation log entries to keep
     #[serde(default = "default_max_log_entries")]
     pub max_log_entries: usize,
@@ -165,6 +157,12 @@ pub struct Config {
     /// Enable CORS (cross-origin requests)
     #[serde(default = "default_cors_enabled")]
     pub cors_enabled: bool,
+
+    /// Enable shell rules (security risk - disabled by default)
+    /// Shell rules can execute arbitrary commands on your system.
+    /// Only enable this if you trust all rule sources.
+    #[serde(default)]
+    pub enable_shell_rules: bool,
 }
 
 /// Rules paths can be a single string or an array of strings
@@ -196,7 +194,7 @@ fn default_host() -> String {
 }
 
 fn default_port() -> u16 {
-    8080
+    61234
 }
 
 fn default_rules_paths() -> RulesPaths {
@@ -205,10 +203,6 @@ fn default_rules_paths() -> RulesPaths {
 
 fn default_log_level() -> String {
     "info".to_string()
-}
-
-fn default_fuzzy_threshold() -> f64 {
-    0.8
 }
 
 fn default_max_log_entries() -> usize {
@@ -227,10 +221,9 @@ impl Default for Config {
             rules_paths: default_rules_paths(),
             api_key: None,
             log_level: default_log_level(),
-            enable_fuzzy: false,
-            fuzzy_threshold: default_fuzzy_threshold(),
             max_log_entries: default_max_log_entries(),
             cors_enabled: default_cors_enabled(),
+            enable_shell_rules: false,
         }
     }
 }

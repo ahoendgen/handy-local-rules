@@ -70,7 +70,7 @@ handy-rules serve
 ### 3. Test it
 
 ```bash
-curl -X POST http://localhost:8080/v1/chat/completions \
+curl -X POST http://localhost:61234/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"foo slash bar dot com"}]}'
 ```
@@ -96,7 +96,7 @@ curl -X POST http://localhost:8080/v1/chat/completions \
 ### Server Mode
 
 ```bash
-# Start with defaults (localhost:8080)
+# Start with defaults (localhost:61234)
 handy-rules serve
 
 # Custom host and port
@@ -139,12 +139,31 @@ handy-rules validate
 
 ## Configuration
 
-Create a `config.json` file:
+Configuration is loaded from the following locations (in order of precedence):
+
+1. CLI arguments (highest priority)
+2. Config file specified via `--config`
+3. `config.json` in current directory
+4. `~/.handy-local-rules/config.json`
+5. Built-in defaults
+
+### Default Config Directory
+
+The application automatically looks for configuration in `~/.handy-local-rules/`:
+
+```
+~/.handy-local-rules/
+├── config.json      # Main configuration
+├── rules.json       # Default rules file
+└── *.json           # Additional rule files (loaded via glob)
+```
+
+### config.json
 
 ```json
 {
   "host": "127.0.0.1",
-  "port": 8080,
+  "port": 61234,
   "rules_paths": [
     "rules.json",
     "custom-rules/*.json",
@@ -159,15 +178,20 @@ Create a `config.json` file:
 
 ### Configuration Options
 
-| Option            | Default       | Description                                |
-| ----------------- | ------------- | ------------------------------------------ |
-| `host`            | `127.0.0.1`   | Host to bind to                            |
-| `port`            | `8080`        | Port to listen on                          |
-| `rules_paths`     | `rules.json`  | Rules file(s), directories, or globs       |
-| `api_key`         | `null`        | Optional API key for authentication        |
-| `log_level`       | `info`        | Log level (trace/debug/info/warn/error)    |
-| `max_log_entries` | `1000`        | Maximum transformation log entries to keep |
-| `cors_enabled`    | `true`        | Enable CORS headers                        |
+| Option               | Default       | Description                                         |
+| -------------------- | ------------- | --------------------------------------------------- |
+| `host`               | `127.0.0.1`   | Host/IP to bind to (`0.0.0.0` for all interfaces)   |
+| `port`               | `61234`       | Port to listen on (uses private port range)         |
+| `rules_paths`        | `rules.json`  | Rules file(s), directories, or glob patterns        |
+| `api_key`            | `null`        | Optional API key for authentication                 |
+| `log_level`          | `info`        | Log level: `trace`, `debug`, `info`, `warn`, `error`|
+| `max_log_entries`    | `1000`        | Maximum transformation log entries to keep in memory|
+| `cors_enabled`       | `true`        | Enable CORS headers for cross-origin requests       |
+| `enable_shell_rules` | `false`       | Enable shell command rules (**security risk**)      |
+
+### Port Selection
+
+The default port `61234` is in the private/dynamic port range (49152-65535), which minimizes conflicts with other services. The server checks if the port is available at startup and provides helpful error messages if it's in use.
 
 ### Rules Paths
 
@@ -218,6 +242,7 @@ Pattern-based text replacement using Rust regex syntax:
 - `priority` — Higher priority rules are applied first
 - `enabled` — Set to `false` to disable without removing
 - `ignore_case` — Case-insensitive matching (or use `(?i)` in pattern)
+- `stop_on_match` — Stop processing further rules if this rule matches
 
 **Common Patterns:**
 
@@ -270,6 +295,8 @@ Execute shell commands for complex transformations:
 }
 ```
 
+**⚠️ Security Warning:** Shell rules can execute arbitrary commands on your system. They are **disabled by default**. To enable, set `enable_shell_rules: true` in your config.
+
 **How it works:**
 
 1. Input text is sent to the command via **stdin**
@@ -291,22 +318,23 @@ Execute shell commands for complex transformations:
 
 ## API Endpoints
 
-| Method | Path                     | Description               |
-| ------ | ------------------------ | ------------------------- |
-| GET    | `/`                      | Dashboard UI              |
-| GET    | `/health`                | Health check              |
-| POST   | `/v1/chat/completions`   | Process text with rules   |
-| GET    | `/v1/models`             | List available models     |
-| GET    | `/v1/rules`              | List all loaded rules     |
-| GET    | `/v1/logs`               | Get transformation logs   |
-| DELETE | `/v1/logs`               | Clear transformation logs |
-| GET    | `/swagger-ui/`           | Swagger UI                |
-| GET    | `/api-docs/openapi.json` | OpenAPI specification     |
+| Method | Path                        | Description                   |
+| ------ | --------------------------- | ----------------------------- |
+| GET    | `/`                         | Dashboard UI                  |
+| GET    | `/health`                   | Health check                  |
+| POST   | `/v1/chat/completions`      | Process text with rules       |
+| GET    | `/v1/models`                | List available models         |
+| GET    | `/v1/rules`                 | List all loaded rules         |
+| POST   | `/v1/rules/{id}/toggle`     | Toggle rule enabled/disabled  |
+| GET    | `/v1/logs`                  | Get transformation logs       |
+| DELETE | `/v1/logs`                  | Clear transformation logs     |
+| GET    | `/swagger-ui/`              | Swagger UI                    |
+| GET    | `/api-docs/openapi.json`    | OpenAPI specification         |
 
 ### Chat Completion Request
 
 ```bash
-curl -X POST http://localhost:8080/v1/chat/completions \
+curl -X POST http://localhost:61234/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local-rules",
@@ -326,7 +354,7 @@ The server accepts multiple input formats:
 ### Health Check
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:61234/health
 ```
 
 ```json
@@ -345,16 +373,17 @@ curl http://localhost:8080/health
    ```
 
 2. In Handy, configure a post-processing provider:
-   - **Base URL:** `http://127.0.0.1:8080`
+   - **Base URL:** `http://127.0.0.1:61234`
    - **API Key:** (leave empty or set if configured)
 
 3. Enable post-processing in Handy settings
 
 ## Web Dashboard
 
-Access the dashboard at `http://localhost:8080/`:
+Access the dashboard at `http://localhost:61234/`:
 
 - View all loaded rules with status and priority
+- **Toggle rules on/off** with instant persistence to rules files
 - Test transformations interactively
 - Monitor server health
 - Quick links to Swagger UI and API docs
@@ -368,6 +397,8 @@ For development with Rust code changes, use:
 ```bash
 cargo watch -x 'run -- serve'
 ```
+
+**Note:** When toggling rules via the dashboard or API, the changes are persisted back to the rules file. This will reformat the JSON and **remove any comments** (JSON does not support comments).
 
 ## Example Rules
 
