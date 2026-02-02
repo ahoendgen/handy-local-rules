@@ -9,6 +9,15 @@
     "enabled": true
   },
   {
+    "id": "de-punkt-redundant",
+    "description": "Redundantes 'Punkt' nach Satzzeichen entfernen",
+    "type": "regex",
+    "pattern": "(?i)([.!?])\\s*Punkt\\.?",
+    "replacement": "$1",
+    "priority": 105,
+    "enabled": true
+  },
+  {
     "id": "de-punkt",
     "description": "Punkt -> .",
     "type": "regex",

@@ -402,3 +402,45 @@ mod tests {
 - Response latency: ≤ 30ms
 - Binary size: ≤ 5MB (release, stripped)
 - Memory usage: ≤ 20MB at idle
+
+## Debugging Transformations
+
+When debugging rule issues, use the `logs` command to inspect input/output:
+
+### View Recent Transformations
+
+```bash
+# Show last 10 transformations (default)
+handy-rules logs
+
+# Show last 20 transformations
+handy-rules logs -n 20
+
+# Follow mode: continuously print new transformations
+handy-rules logs -f
+
+# Show and clear logs
+handy-rules logs --clear
+```
+
+### Clear Logs
+
+```bash
+handy-rules logs --clear
+# Or via API:
+curl -s -X DELETE http://localhost:61234/v1/logs
+```
+
+### Check Specific Rule
+
+```bash
+curl -s http://localhost:61234/v1/rules | grep -o '"rule-id"[^}]*}'
+```
+
+### Test Single Transformation
+
+```bash
+curl -s -X POST http://localhost:61234/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Test input here"}' | jq -r '.choices[0].message.content'
+```

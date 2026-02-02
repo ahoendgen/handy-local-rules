@@ -324,6 +324,12 @@ handy-rules status
 handy-rules dashboard
 handy-rules dashboard --browser firefox
 
+# View transformation logs
+handy-rules logs
+handy-rules logs -n 20      # Show last 20
+handy-rules logs -f         # Follow mode
+handy-rules logs --clear    # Show and clear
+
 # Setup (copy rules)
 handy-rules setup
 handy-rules setup --force

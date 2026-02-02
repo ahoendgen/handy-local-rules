@@ -28,18 +28,18 @@
   },
   {
     "id": "cleanup-question-period",
-    "description": "?. -> ? (Fragezeichen gefolgt von Punkt)",
+    "description": "?. -> ? (Fragezeichen gefolgt von Punkten)",
     "type": "regex",
-    "pattern": "\\?\\s*\\.",
+    "pattern": "\\?[\\s.]*\\.",
     "replacement": "?",
     "priority": 15,
     "enabled": true
   },
   {
     "id": "cleanup-exclamation-period",
-    "description": "!. -> ! (Ausrufezeichen gefolgt von Punkt)",
+    "description": "!. -> ! (Ausrufezeichen gefolgt von Punkten)",
     "type": "regex",
-    "pattern": "!\\s*\\.",
+    "pattern": "![\\s.]*\\.",
     "replacement": "!",
     "priority": 15,
     "enabled": true

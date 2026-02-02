@@ -89,6 +89,21 @@ enum Command {
         #[arg(short, long)]
         browser: Option<String>,
     },
+
+    /// Show recent transformation logs (input -> output)
+    Logs {
+        /// Number of recent transformations to show
+        #[arg(short = 'n', long, default_value = "10")]
+        count: usize,
+
+        /// Follow mode: continuously print new logs
+        #[arg(short, long)]
+        follow: bool,
+
+        /// Clear logs after showing (ignored with --follow)
+        #[arg(long)]
+        clear: bool,
+    },
 }
 
 #[tokio::main]
@@ -120,6 +135,11 @@ async fn main() -> anyhow::Result<()> {
         Some(Command::Status) => run_status(&config).await,
         Some(Command::Setup { force }) => run_setup(force),
         Some(Command::Dashboard { browser }) => run_dashboard(&config, browser),
+        Some(Command::Logs {
+            count,
+            follow,
+            clear,
+        }) => run_logs(&config, count, follow, clear).await,
         None => {
             // Default: start server (backward compatible)
             run_server(config).await
@@ -289,6 +309,117 @@ fn run_dashboard(config: &Config, browser: Option<String>) -> anyhow::Result<()>
             std::process::Command::new("cmd")
                 .args(["/C", "start", &url])
                 .spawn()?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn run_logs(config: &Config, count: usize, follow: bool, clear: bool) -> anyhow::Result<()> {
+    use serde::Deserialize;
+    use std::collections::HashSet;
+
+    #[derive(Deserialize, Clone)]
+    #[allow(dead_code)]
+    struct LogEntry {
+        rule_id: String,
+        input: String,
+        output: String,
+        matched: bool,
+    }
+
+    #[derive(Deserialize)]
+    struct LogsResponse {
+        logs: Vec<LogEntry>,
+    }
+
+    let logs_url = format!("http://{}:{}/v1/logs", config.host, config.port);
+
+    // Helper to group logs into requests
+    fn group_logs(logs: &[LogEntry]) -> Vec<(String, String)> {
+        let mut requests: Vec<(String, String)> = Vec::new();
+        let mut current_input: Option<String> = None;
+        let mut current_output: Option<String> = None;
+
+        for log in logs {
+            if current_input.is_none() || Some(&log.input) != current_output.as_ref() {
+                if let (Some(inp), Some(out)) = (current_input.take(), current_output.take()) {
+                    requests.push((inp, out));
+                }
+                current_input = Some(log.input.clone());
+            }
+            current_output = Some(log.output.clone());
+        }
+
+        if let (Some(inp), Some(out)) = (current_input, current_output) {
+            requests.push((inp, out));
+        }
+
+        requests
+    }
+
+    // Helper to fetch logs
+    async fn fetch_logs(url: &str) -> anyhow::Result<Vec<LogEntry>> {
+        let response = reqwest::get(url).await?;
+        if !response.status().is_success() {
+            return Err(anyhow::anyhow!(
+                "Failed to fetch logs (is the server running?)"
+            ));
+        }
+        let logs_response: LogsResponse = response.json().await?;
+        Ok(logs_response.logs)
+    }
+
+    if follow {
+        // Follow mode: continuously poll for new logs
+        println!("=== Following Transformations (Ctrl+C to stop) ===\n");
+
+        let mut seen: HashSet<String> = HashSet::new();
+
+        loop {
+            let logs = fetch_logs(&logs_url).await?;
+            let requests = group_logs(&logs);
+
+            for (inp, out) in &requests {
+                if inp != out {
+                    // Create a unique key for this transformation
+                    let key = format!("{}|{}", inp, out);
+                    if !seen.contains(&key) {
+                        seen.insert(key);
+                        println!("IN:  {}", inp);
+                        println!("OUT: {}", out);
+                        println!();
+                    }
+                }
+            }
+
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
+    } else {
+        // One-shot mode
+        let logs = fetch_logs(&logs_url).await?;
+        let requests = group_logs(&logs);
+
+        println!("=== Recent Transformations (Input → Output) ===\n");
+
+        let start = requests.len().saturating_sub(count);
+        for (inp, out) in &requests[start..] {
+            if inp != out {
+                println!("IN:  {}", inp);
+                println!("OUT: {}", out);
+                println!();
+            }
+        }
+
+        if requests.is_empty() {
+            println!("(no logs yet)");
+        }
+
+        // Clear logs if requested
+        if clear {
+            let client = reqwest::Client::new();
+            client.delete(&logs_url).send().await?;
+            println!("Logs cleared.");
         }
     }
 
