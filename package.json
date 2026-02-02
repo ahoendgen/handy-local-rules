@@ -1,6 +1,7 @@
 {
   "name": "handy-local-rules",
   "private": true,
+  "type": "module",
   "description": "Local rule-based text transformer with OpenAI-compatible API",
   "license": "MIT",
   "scripts": {
