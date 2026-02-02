@@ -1,0 +1,23 @@
+# Clippy configuration
+# Run: cargo clippy
+
+# Cognitive complexity threshold
+cognitive-complexity-threshold = 25
+
+# Maximum lines in a function
+too-many-lines-threshold = 100
+
+# Type complexity threshold
+type-complexity-threshold = 250
+
+# Maximum number of arguments
+too-many-arguments-threshold = 7
+
+# Documentation requirements
+missing-docs-in-crate-items = true
+
+# Allow certain patterns
+allowed-idents-below-min-chars = ["i", "j", "k", "n", "x", "y", "id", "tx", "rx"]
+
+# MSRV - Minimum Supported Rust Version
+msrv = "1.75.0"

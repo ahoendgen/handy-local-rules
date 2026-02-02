@@ -1,0 +1,48 @@
+# Rust / Cargo
+/target/
+Cargo.lock
+
+# Node.js (for husky/lint-staged/commitlint)
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+
+# IDE
+.idea/
+.vscode/
+
+# Claude Code local settings
+.claude/settings.local.json
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+server.log
+
+# Environment
+.env
+.env.local
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Coverage
+*.profraw
+*.profdata
+coverage/
+tarpaulin-report.html
+
+# Documentation
+/doc/
+
+# Temporary files
+*.tmp
+*.temp

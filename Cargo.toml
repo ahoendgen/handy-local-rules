@@ -1,0 +1,62 @@
+[package]
+name = "handy-local-rules"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name"]
+description = "Local rule-based text transformer with OpenAI-compatible API"
+license = "MIT"
+repository = "https://github.com/yourname/handy-local-rules"
+
+[dependencies]
+# Web framework
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Regex
+regex = "1"
+
+# File watching
+notify = "6"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+anyhow = "1"
+thiserror = "1"
+glob = "0.3"
+
+# OpenAPI / Swagger
+utoipa = { version = "4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "7", features = ["axum"] }
+
+# Optional fuzzy matching
+strsim = { version = "0.11", optional = true }
+dirs = "6.0.0"
+
+[dev-dependencies]
+tempfile = "3"
+
+[features]
+default = []
+fuzzy = ["strsim"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[[bin]]
+name = "handy-rules"
+path = "src/main.rs"

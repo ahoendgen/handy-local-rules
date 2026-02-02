@@ -1,0 +1,11 @@
+{
+  "host": "127.0.0.1",
+  "port": 8080,
+  "rules_paths": "rules.json",
+  "api_key": null,
+  "log_level": "info",
+  "enable_fuzzy": false,
+  "fuzzy_threshold": 0.8,
+  "max_log_entries": 1000,
+  "cors_enabled": true
+}

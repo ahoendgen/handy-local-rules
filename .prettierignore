@@ -1,0 +1,11 @@
+# Build artifacts
+target/
+node_modules/
+
+# Generated files
+Cargo.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Rust source (handled by rustfmt)
+*.rs

@@ -1,0 +1,107 @@
+[
+  {
+    "description": "spoken 'slash' -> /",
+    "enabled": true,
+    "id": "slash",
+    "pattern": "(?i)\\bslash\\b",
+    "priority": 100,
+    "replacement": "/",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'backslash' -> \\",
+    "enabled": true,
+    "id": "backslash",
+    "pattern": "(?i)\\bbackslash\\b",
+    "priority": 90,
+    "replacement": "\\\\",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'dot' -> .",
+    "enabled": true,
+    "id": "dot",
+    "pattern": "(?i)\\bdot\\b",
+    "priority": 80,
+    "replacement": ".",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'at sign' -> @",
+    "enabled": true,
+    "id": "at-sign",
+    "pattern": "(?i)\\bat sign\\b",
+    "priority": 70,
+    "replacement": "@",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'underscore' -> _",
+    "enabled": true,
+    "id": "underscore",
+    "pattern": "(?i)\\bunderscore\\b",
+    "priority": 60,
+    "replacement": "_",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'dash' -> -",
+    "enabled": true,
+    "id": "dash",
+    "pattern": "(?i)\\bdash\\b",
+    "priority": 50,
+    "replacement": "-",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'colon' -> :",
+    "enabled": true,
+    "id": "colon",
+    "pattern": "(?i)\\bcolon\\b",
+    "priority": 40,
+    "replacement": ":",
+    "type": "regex"
+  },
+  {
+    "description": "spoken 'semicolon' -> ;",
+    "enabled": true,
+    "id": "semicolon",
+    "pattern": "(?i)\\bsemicolon\\b",
+    "priority": 40,
+    "replacement": ";",
+    "type": "regex"
+  },
+  {
+    "description": "Normalize multiple spaces to single space",
+    "enabled": true,
+    "id": "normalize-whitespace",
+    "pattern": "normalize_whitespace",
+    "priority": 10,
+    "type": "function"
+  },
+  {
+    "description": "Trim leading/trailing whitespace",
+    "enabled": true,
+    "id": "trim",
+    "pattern": "trim",
+    "priority": 5,
+    "type": "function"
+  },
+  {
+    "description": "Example shell command",
+    "enabled": true,
+    "id": "custom-shell-example",
+    "pattern": "cat | sed 's/example/EXAMPLE/g'",
+    "priority": 1,
+    "timeout_ms": 5000,
+    "type": "shell"
+  },
+  {
+    "enabled": true,
+    "id": "test-hotreload",
+    "pattern": "(?i)\\bhello\\b",
+    "priority": 200,
+    "replacement": "HALLO",
+    "type": "regex"
+  }
+]
