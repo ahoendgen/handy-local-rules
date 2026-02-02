@@ -97,11 +97,7 @@ The application looks for configuration in `~/.handy-local-rules/`:
 {
   "host": "127.0.0.1",
   "port": 61234,
-  "rules_paths": [
-    "rules.json",
-    "custom-rules/*.json",
-    "extra-rules/"
-  ],
+  "rules_paths": ["rules.json", "custom-rules/*.json", "extra-rules/"],
   "api_key": null,
   "log_level": "info",
   "max_log_entries": 1000,
@@ -162,6 +158,7 @@ make release            # Build optimized release binary
 - **ONLY** commit when the user explicitly requests it (e.g., "commit", "add and commit")
 - If the commit instruction was not given in the immediately preceding message, use the `AskUserQuestion` tool to confirm before committing
 - When in doubt, always ask first
+- **NEVER** add `Co-Authored-By` or Claude Code attribution to commit messages
 
 ### Commit Messages
 
@@ -185,29 +182,29 @@ chore: maintenance
 
 ## Key Files
 
-| File                 | Purpose                              |
-| -------------------- | ------------------------------------ |
-| `config.json`        | Server configuration                 |
-| `config.example.json`| Example configuration                |
-| `rules.json`         | User-defined transformation rules    |
-| `Cargo.toml`         | Rust dependencies                    |
-| `rustfmt.toml`       | Rust formatting config               |
-| `clippy.toml`        | Clippy linter config                 |
+| File                  | Purpose                           |
+| --------------------- | --------------------------------- |
+| `config.json`         | Server configuration              |
+| `config.example.json` | Example configuration             |
+| `rules.json`          | User-defined transformation rules |
+| `Cargo.toml`          | Rust dependencies                 |
+| `rustfmt.toml`        | Rust formatting config            |
+| `clippy.toml`         | Clippy linter config              |
 
 ## API Endpoints
 
-| Method | Path                        | Description                  |
-| ------ | --------------------------- | ---------------------------- |
-| GET    | `/`                         | Dashboard UI                 |
-| GET    | `/health`                   | Health check                 |
-| POST   | `/v1/chat/completions`      | Process text with rules      |
-| GET    | `/v1/models`                | List available models        |
-| GET    | `/v1/rules`                 | List all loaded rules        |
-| POST   | `/v1/rules/:id/toggle`      | Toggle rule enabled/disabled |
-| GET    | `/v1/logs`                  | Get transformation logs      |
-| DELETE | `/v1/logs`                  | Clear transformation logs    |
-| GET    | `/swagger-ui/`              | Swagger UI                   |
-| GET    | `/api-docs/openapi.json`    | OpenAPI spec                 |
+| Method | Path                     | Description                  |
+| ------ | ------------------------ | ---------------------------- |
+| GET    | `/`                      | Dashboard UI                 |
+| GET    | `/health`                | Health check                 |
+| POST   | `/v1/chat/completions`   | Process text with rules      |
+| GET    | `/v1/models`             | List available models        |
+| GET    | `/v1/rules`              | List all loaded rules        |
+| POST   | `/v1/rules/:id/toggle`   | Toggle rule enabled/disabled |
+| GET    | `/v1/logs`               | Get transformation logs      |
+| DELETE | `/v1/logs`               | Clear transformation logs    |
+| GET    | `/swagger-ui/`           | Swagger UI                   |
+| GET    | `/api-docs/openapi.json` | OpenAPI spec                 |
 
 ## Rule Types
 
@@ -359,20 +356,20 @@ mod tests {
 
 ### What to Test
 
-| Component            | Test Focus                                    |
-| -------------------- | --------------------------------------------- |
-| `rules/engine.rs`    | Rule application, priority ordering, edge cases |
-| `rules/types.rs`     | Rule parsing, builtin functions               |
-| `models/request.rs`  | Request parsing, content extraction           |
-| `config.rs`          | Config loading, merging, defaults             |
-| `handlers.rs`        | HTTP responses, error handling                |
+| Component           | Test Focus                                      |
+| ------------------- | ----------------------------------------------- |
+| `rules/engine.rs`   | Rule application, priority ordering, edge cases |
+| `rules/types.rs`    | Rule parsing, builtin functions                 |
+| `models/request.rs` | Request parsing, content extraction             |
+| `config.rs`         | Config loading, merging, defaults               |
+| `handlers.rs`       | HTTP responses, error handling                  |
 
 ## Environment Variables
 
-| Variable   | Default     | Description                             |
-| ---------- | ----------- | --------------------------------------- |
-| `RUST_LOG` | `info`      | Log level (trace/debug/info/warn/error) |
-| `API_KEY`  | (none)      | Optional API key for authentication     |
+| Variable   | Default | Description                             |
+| ---------- | ------- | --------------------------------------- |
+| `RUST_LOG` | `info`  | Log level (trace/debug/info/warn/error) |
+| `API_KEY`  | (none)  | Optional API key for authentication     |
 
 ## Performance Targets
 
