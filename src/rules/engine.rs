@@ -34,8 +34,9 @@ pub struct RuleEngine {
     regex_cache: RwLock<HashMap<String, Regex>>,
 
     /// Transformation log (most recent transformations)
-    /// Uses VecDeque for efficient FIFO operations without memory fragmentation
-    transformation_log: RwLock<VecDeque<TransformationLog>>,
+    /// Uses Mutex (not RwLock) since every request writes to the log
+    /// VecDeque for efficient FIFO operations without memory fragmentation
+    transformation_log: Mutex<VecDeque<TransformationLog>>,
 
     /// Maximum log entries to keep
     max_log_entries: usize,
@@ -49,11 +50,6 @@ pub struct RuleEngine {
 }
 
 impl RuleEngine {
-    /// Create a new rule engine and load rules from the given path
-    pub fn new(rules_path: &str, enable_shell_rules: bool) -> Result<Self, AppError> {
-        Self::new_from_paths(&[rules_path.to_string()], enable_shell_rules)
-    }
-
     /// Create a new rule engine and load rules from multiple paths
     pub fn new_from_paths(paths: &[String], enable_shell_rules: bool) -> Result<Self, AppError> {
         let rules = loader::load_rules_from_paths(paths)?;
@@ -83,7 +79,7 @@ impl RuleEngine {
             rules_paths: paths.to_vec(),
             rules: RwLock::new(rules),
             regex_cache: RwLock::new(HashMap::new()),
-            transformation_log: RwLock::new(VecDeque::new()),
+            transformation_log: Mutex::new(VecDeque::new()),
             max_log_entries: 1000,
             enable_shell_rules,
             watchers: Mutex::new(Vec::new()),
@@ -149,7 +145,7 @@ impl RuleEngine {
     /// Get recent transformation logs
     pub fn get_transformation_log(&self) -> Vec<TransformationLog> {
         self.transformation_log
-            .read()
+            .lock()
             .unwrap()
             .iter()
             .cloned()
@@ -158,7 +154,7 @@ impl RuleEngine {
 
     /// Clear transformation log
     pub fn clear_transformation_log(&self) {
-        self.transformation_log.write().unwrap().clear();
+        self.transformation_log.lock().unwrap().clear();
     }
 
     /// Apply all enabled rules to the input text
@@ -229,6 +225,10 @@ impl RuleEngine {
         if let Some(regex) = cache.get(&rule.id) {
             regex.replace_all(text, &rule.replacement).to_string()
         } else {
+            tracing::warn!(
+                "Regex cache miss for rule '{}' - check compilation logs",
+                rule.id
+            );
             text.to_string()
         }
     }
@@ -300,7 +300,7 @@ impl RuleEngine {
 
     /// Log a transformation
     fn log_transformation(&self, log: TransformationLog) {
-        let mut logs = self.transformation_log.write().unwrap();
+        let mut logs = self.transformation_log.lock().unwrap();
 
         logs.push_back(log);
 
@@ -403,7 +403,9 @@ mod tests {
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
+        let engine =
+            RuleEngine::new_from_paths(&[file.path().to_str().unwrap().to_string()], false)
+                .unwrap();
 
         assert_eq!(engine.apply("foo slash bar"), "foo / bar");
     }
@@ -425,7 +427,9 @@ mod tests {
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
+        let engine =
+            RuleEngine::new_from_paths(&[file.path().to_str().unwrap().to_string()], false)
+                .unwrap();
 
         assert_eq!(engine.apply("hello world"), "HELLO WORLD");
     }
@@ -448,7 +452,8 @@ mod tests {
 
         let file = create_test_rules_file(&rules);
         // Shell rules need enable_shell_rules=true
-        let engine = RuleEngine::new(file.path().to_str().unwrap(), true).unwrap();
+        let engine =
+            RuleEngine::new_from_paths(&[file.path().to_str().unwrap().to_string()], true).unwrap();
 
         assert_eq!(engine.apply("hello"), "HELLO");
     }
@@ -470,7 +475,9 @@ mod tests {
         }];
 
         let file = create_test_rules_file(&rules);
-        let engine = RuleEngine::new(file.path().to_str().unwrap(), false).unwrap();
+        let engine =
+            RuleEngine::new_from_paths(&[file.path().to_str().unwrap().to_string()], false)
+                .unwrap();
 
         engine.apply("foo test");
 

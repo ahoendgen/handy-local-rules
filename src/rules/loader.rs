@@ -131,17 +131,17 @@ pub fn watch_rules_file(
     path: PathBuf,
     engine: Arc<RuleEngine>,
 ) -> Result<RecommendedWatcher, AppError> {
-    use std::sync::atomic::{AtomicU64, Ordering};
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use std::sync::Mutex;
+    use std::time::{Duration, Instant};
 
     let path_clone = path.clone();
 
-    // Debounce: track last reload time to avoid rapid reloads
-    let last_reload = Arc::new(AtomicU64::new(0));
+    // Debounce: track last reload time using monotonic clock (immune to NTP jumps)
+    let last_reload = Arc::new(Mutex::new(Instant::now()));
     let last_reload_clone = last_reload.clone();
 
-    // Debounce interval in milliseconds
-    const DEBOUNCE_MS: u64 = 500;
+    // Debounce interval
+    const DEBOUNCE: Duration = Duration::from_millis(500);
 
     // Create watcher
     let mut watcher: RecommendedWatcher =
@@ -150,18 +150,13 @@ pub fn watch_rules_file(
                 Ok(event) => {
                     if matches!(event.kind, EventKind::Modify(_) | EventKind::Create(_)) {
                         // Debounce: check if enough time has passed since last reload
-                        let now = SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .map(|d| d.as_millis() as u64)
-                            .unwrap_or(0);
-                        let last = last_reload_clone.load(Ordering::Relaxed);
-
-                        if now - last < DEBOUNCE_MS {
+                        let mut last = last_reload_clone.lock().unwrap();
+                        if last.elapsed() < DEBOUNCE {
                             tracing::trace!("Debouncing file change event");
                             return;
                         }
-
-                        last_reload_clone.store(now, Ordering::Relaxed);
+                        *last = Instant::now();
+                        drop(last); // Release lock before reload
 
                         tracing::info!("Rules file changed, reloading...");
                         if let Err(e) = engine.reload() {

@@ -1,19 +1,55 @@
 [
   {
+    "id": "cleanup-question-period",
+    "description": "?. -> ? (Fragezeichen gefolgt von Punkt)",
+    "type": "regex",
+    "pattern": "\\?\\s*\\.",
+    "replacement": "?",
+    "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-exclamation-period",
+    "description": "!. -> ! (Ausrufezeichen gefolgt von Punkt)",
+    "type": "regex",
+    "pattern": "!\\s*\\.",
+    "replacement": "!",
+    "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-comma-period",
+    "description": ",. -> , (Komma gefolgt von Punkt)",
+    "type": "regex",
+    "pattern": ",\\s*\\.",
+    "replacement": ",",
+    "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-underscore-period",
+    "description": "_. -> _ (Unterstrich gefolgt von Punkt)",
+    "type": "regex",
+    "pattern": "_\\s*\\.",
+    "replacement": "_",
+    "priority": 15,
+    "enabled": true
+  },
+  {
+    "id": "cleanup-dash-period",
+    "description": "-. -> - (Bindestrich gefolgt von Punkt)",
+    "type": "regex",
+    "pattern": "-\\s*\\.",
+    "replacement": "-",
+    "priority": 15,
+    "enabled": true
+  },
+  {
     "id": "de-cleanup-multiple-commas",
     "description": "Mehrere Kommas -> ein Komma",
     "type": "regex",
     "pattern": ",(?:\\s*,)+",
     "replacement": ",",
-    "priority": 10,
-    "enabled": true
-  },
-  {
-    "id": "de-cleanup-multiple-periods",
-    "description": "Mehrere Punkte -> ein Punkt",
-    "type": "regex",
-    "pattern": "\\.(?:\\s*\\.)+",
-    "replacement": ".",
     "priority": 10,
     "enabled": true
   },

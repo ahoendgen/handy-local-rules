@@ -124,4 +124,31 @@ mod tests {
             Some("Test prompt".to_string())
         );
     }
+
+    #[test]
+    fn test_ignore_assistant_prefill() {
+        // When an assistant message follows the user message (prefill),
+        // we should still extract the user message, not the assistant prefill
+        let request = ChatCompletionRequest {
+            messages: Some(vec![
+                Message {
+                    role: "user".to_string(),
+                    content: "Real Input".to_string(),
+                },
+                Message {
+                    role: "assistant".to_string(),
+                    content: "Prefill".to_string(),
+                },
+            ]),
+            prompt: None,
+            input: None,
+            text: None,
+        };
+
+        // Should skip "Prefill" and find "Real Input"
+        assert_eq!(
+            request.extract_user_content(),
+            Some("Real Input".to_string())
+        );
+    }
 }

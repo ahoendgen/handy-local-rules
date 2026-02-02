@@ -1,0 +1,22 @@
+[
+  {
+    "id": "dev-ac",
+    "description": "AC/A C -> add and commit (nur wenn allein)",
+    "type": "regex",
+    "pattern": "^A\\.? ?C\\.?$",
+    "replacement": "add and commit",
+    "priority": 200,
+    "enabled": true,
+    "stop_on_match": true
+  },
+  {
+    "id": "dev-sac",
+    "description": "SAC/S A C -> /add-and-commit (nur wenn allein)",
+    "type": "regex",
+    "pattern": "^S\\.? ?A\\.? ?C\\.?$",
+    "replacement": "/add-and-commit",
+    "priority": 200,
+    "enabled": true,
+    "stop_on_match": true
+  }
+]

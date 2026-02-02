@@ -73,7 +73,8 @@ dev:
 
 # Development mode in tmux session (with debug logging)
 dev-tmux:
-	tmux new-session -d -s handy 'cargo watch -x "run -- serve --log-level debug"' || tmux attach -t handy
+	tmux new-session -d -s handy 'cargo watch -x "run -- serve --log-level debug"' 2>/dev/null || true
+	tmux attach -t handy
 
 # Watch for changes and run checks
 watch:

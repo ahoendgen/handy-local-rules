@@ -156,7 +156,7 @@
     "id": "de-at-zeichen",
     "description": "At-Zeichen/Klammeraffe -> @",
     "type": "regex",
-    "pattern": "(?i)\\b(at[- ]?zeichen|klammeraffe)\\b",
+    "pattern": "(?i)\\b(at[- ]?zeichen|klammeraffe|klammer[- ]?affe)\\b",
     "replacement": "@",
     "priority": 100,
     "enabled": true

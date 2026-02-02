@@ -375,11 +375,25 @@ curl http://localhost:61234/health
    handy-rules serve
    ```
 
-2. In Handy, configure a post-processing provider:
-   - **Base URL:** `http://127.0.0.1:61234`
-   - **API Key:** (leave empty or set if configured)
+2. In Handy Settings, enable **Experimental Features** to unlock post-processing options.
 
-3. Enable post-processing in Handy settings
+3. Configure the API settings:
+
+   | Setting           | Value                       |
+   | ----------------- | --------------------------- |
+   | **Anbieter**      | `Custom`                    |
+   | **Basis-URL**     | `http://localhost:61234/v1` |
+   | **API-Schlüssel** | `sk-...` (any placeholder)  |
+   | **Modell**        | `local-rules`               |
+
+4. Create a prompt for local rules:
+
+   | Setting                | Value         |
+   | ---------------------- | ------------- |
+   | **Prompt-Name**        | `Local Rules` |
+   | **Prompt-Anweisungen** | `${output}`   |
+
+   > **Tip:** Use `${output}` to pass the transcribed text directly to the rules engine.
 
 ## Web Dashboard
 
