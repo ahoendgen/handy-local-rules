@@ -8,7 +8,7 @@
 
 ## Tech Stack
 
-- **Language:** Rust (Edition 2021)
+- **Language:** Rust (Edition 2024)
 - **Web Framework:** axum 0.7
 - **Async Runtime:** tokio
 - **Serialization:** serde / serde_json
@@ -121,8 +121,20 @@ Accepts multiple formats:
 ```bash
 make setup              # Initial setup (install dependencies + git hooks)
 make build              # Build debug version
+make dev                # Development mode with hot-reload
 cargo run -- serve      # Run server
-cargo watch -x 'run -- serve'  # Run with hot-reload on code changes
+```
+
+### tmux Collaboration
+
+When the user starts the dev server in a tmux session, Claude can access it:
+
+```bash
+# List sessions
+tmux list-sessions
+
+# Read session output
+tmux capture-pane -t handy -p | tail -20
 ```
 
 ### Code Quality

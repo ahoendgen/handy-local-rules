@@ -1,7 +1,7 @@
 # Makefile for handy-local-rules
 # Common development commands
 
-.PHONY: all setup build release check fmt lint test clean run dev help
+.PHONY: all setup build release check fmt lint test clean run dev dev-tmux help
 
 # Default target
 all: check
@@ -71,6 +71,10 @@ run-release:
 dev:
 	cargo watch -x 'run -- serve'
 
+# Development mode in tmux session (with debug logging)
+dev-tmux:
+	tmux new-session -d -s handy 'cargo watch -x "run -- serve --log-level debug"' || tmux attach -t handy
+
 # Watch for changes and run checks
 watch:
 	cargo watch -x "clippy -- -D warnings" -x test
@@ -111,6 +115,7 @@ help:
 	@echo "  run          - Run server (debug)"
 	@echo "  run-release  - Run server (release)"
 	@echo "  dev          - Development mode with hot-reload"
+	@echo "  dev-tmux     - Dev mode in tmux session (Claude accessible)"
 	@echo "  watch        - Watch and run checks on changes"
 	@echo "  docs         - Generate documentation"
 	@echo "  audit        - Security audit"

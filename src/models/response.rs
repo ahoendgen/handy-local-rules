@@ -93,30 +93,42 @@ pub struct HealthResponse {
     pub rules_loaded: usize,
 }
 
-/// Models list response
+/// Models list response (OpenAI-compatible)
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ModelsResponse {
+    /// Object type (always "list")
+    #[schema(example = "list")]
+    pub object: String,
     /// Available models
     pub data: Vec<ModelInfo>,
 }
 
-/// Model info
+/// Model info (OpenAI-compatible)
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ModelInfo {
     /// Model ID
     #[schema(example = "local-rules")]
     pub id: String,
-    /// Object type
+    /// Object type (always "model")
     #[schema(example = "model")]
     pub object: String,
+    /// Unix timestamp when the model was created
+    #[schema(example = 1686935002)]
+    pub created: i64,
+    /// Organization that owns the model
+    #[schema(example = "handy-local-rules")]
+    pub owned_by: String,
 }
 
 impl Default for ModelsResponse {
     fn default() -> Self {
         Self {
+            object: "list".to_string(),
             data: vec![ModelInfo {
                 id: "local-rules".to_string(),
                 object: "model".to_string(),
+                created: 1770019200, // 2026-02-02 00:00:00 UTC
+                owned_by: "handy-local-rules".to_string(),
             }],
         }
     }
