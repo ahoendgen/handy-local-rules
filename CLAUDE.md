@@ -129,12 +129,26 @@ cargo run -- serve      # Run server
 
 When the user starts the dev server in a tmux session, Claude can access it:
 
+**Current sessions:** `!tmux list-sessions 2>/dev/null || echo "none"`
+
 ```bash
-# List sessions
+# List all sessions
 tmux list-sessions
 
-# Read session output
+# List windows in a session
+tmux list-windows -t handy
+
+# Read session output (last 20 lines)
 tmux capture-pane -t handy -p | tail -20
+
+# Read full scrollback buffer
+tmux capture-pane -t handy -p -S -
+
+# Send keys to session
+tmux send-keys -t handy "command" Enter
+
+# Kill session
+tmux kill-session -t handy
 ```
 
 ### Code Quality
