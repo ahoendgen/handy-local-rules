@@ -28,5 +28,15 @@
     "priority": 300,
     "enabled": true,
     "stop_on_match": true
+  },
+  {
+    "id": "dev-streichholz",
+    "description": "Streichholz/Streich Holz/Streich-Holz → cy (nur wenn allein)",
+    "type": "regex",
+    "pattern": "^(?i)streich[\\s-]?holz\\.?$",
+    "replacement": "cy",
+    "priority": 300,
+    "enabled": true,
+    "stop_on_match": true
   }
 ]
