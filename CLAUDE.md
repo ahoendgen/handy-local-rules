@@ -221,15 +221,7 @@ chore: maintenance
 
 **IMPORTANT:** All rules must be stored in the `rules/` directory, organized by category.
 
-```
-rules/
-├── de
-│   └── satzzeichen.json
-├── dev-kommandos
-│   └── git.json
-└── general
-    └── cleanup.json
-```
+!`tree rules/`
 
 - `de/` — German language rules (Satzzeichen, etc.)
 - `dev-kommandos/` — Developer commands (Git shortcuts, etc.)
