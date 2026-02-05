@@ -18,5 +18,15 @@
     "priority": 200,
     "enabled": true,
     "stop_on_match": true
+  },
+  {
+    "id": "dev-kaesekuchen",
+    "description": "Käsekuchen/Käse Kuchen/Käse-Kuchen → /add-and-commit (nur wenn allein)",
+    "type": "regex",
+    "pattern": "^(?i)käse[\\s-]?kuchen\\.?$",
+    "replacement": "/add-and-commit",
+    "priority": 300,
+    "enabled": true,
+    "stop_on_match": true
   }
 ]

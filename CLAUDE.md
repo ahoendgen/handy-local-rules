@@ -208,14 +208,32 @@ chore: maintenance
 
 ## Key Files
 
-| File                  | Purpose                           |
-| --------------------- | --------------------------------- |
-| `config.json`         | Server configuration              |
-| `config.example.json` | Example configuration             |
-| `rules.json`          | User-defined transformation rules |
-| `Cargo.toml`          | Rust dependencies                 |
-| `rustfmt.toml`        | Rust formatting config            |
-| `clippy.toml`         | Clippy linter config              |
+| File                  | Purpose                          |
+| --------------------- | -------------------------------- |
+| `config.json`         | Server configuration             |
+| `config.example.json` | Example configuration            |
+| `rules/`              | Transformation rules (see below) |
+| `Cargo.toml`          | Rust dependencies                |
+| `rustfmt.toml`        | Rust formatting config           |
+| `clippy.toml`         | Clippy linter config             |
+
+### Rules Directory
+
+**IMPORTANT:** All rules must be stored in the `rules/` directory, organized by category.
+
+```
+rules/
+├── de
+│   └── satzzeichen.json
+├── dev-kommandos
+│   └── git.json
+└── general
+    └── cleanup.json
+```
+
+- `de/` — German language rules (Satzzeichen, etc.)
+- `dev-kommandos/` — Developer commands (Git shortcuts, etc.)
+- `general/` — General cleanup rules
 
 ## API Endpoints
 
