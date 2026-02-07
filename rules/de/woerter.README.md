@@ -1,22 +1,22 @@
-# Wörter (de/woerter.json)
+# Words (de/woerter.json)
 
-Ersetzt häufige gesprochene Wörter durch ihre korrekte deutsche Entsprechung.
+Replaces commonly spoken words with their correct German equivalent.
 
-## Beispiele
+## Examples
 
-| Eingabe | Ausgabe |
-| ------- | ------- |
-| Yeah    | Ja      |
+| Input | Output |
+| ----- | ------ |
+| Yeah  | Ja     |
 
-## Funktionsweise
+## How it works
 
-Reine **Regex-Regeln** mit Wortgrenzen und case-insensitive Matching. Hauptsächlich für Anglizismen, die beim Diktieren auftreten.
+Pure **regex rules** with word boundaries and case-insensitive matching. Primarily for anglicisms that occur during dictation.
 
-**Priorität 100**
+**Priority 100**
 
-## Aktivierung
+## Activation
 
-In `config.json` unter `rules_paths` eintragen:
+Add to `rules_paths` in `config.json`:
 
 ```json
 {

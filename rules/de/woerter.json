@@ -1,0 +1,11 @@
+[
+  {
+    "id": "de-yeah-ja",
+    "description": "Yeah(.) -> Ja",
+    "type": "regex",
+    "pattern": "(?i)\\bYeah\\b\\.?",
+    "replacement": "Ja",
+    "priority": 100,
+    "enabled": true
+  }
+]

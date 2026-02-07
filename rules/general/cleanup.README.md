@@ -1,42 +1,42 @@
 # Cleanup (general/cleanup.json)
 
-Bereinigt Text nach der Transformation: entfernt doppelte Satzzeichen, korrigiert Abstände und normalisiert Whitespace.
+Cleans up text after transformation: removes duplicate punctuation, fixes spacing, and normalizes whitespace.
 
-## Was wird bereinigt?
+## What gets cleaned up?
 
-| Kategorie                    | Beispiel                                                          | Ergebnis        |
-| ---------------------------- | ----------------------------------------------------------------- | --------------- |
-| Trailing Ellipsis            | Text...                                                           | Text            |
-| Komma vor ? / !              | ,?                                                                | ?               |
-| Punkt nach ? / !             | ?.                                                                | ?               |
-| Punkt + Komma                | ., oder ,.                                                        | .               |
-| Sonderzeichen + Punkt        | \_. oder -.                                                       | \_ oder -       |
-| Doppelte Zeichen             | !! oder ?? oder ::                                                | ! oder ? oder : |
-| Doppelte Punkte              | ..                                                                | .               |
-| Ellipsis-Schutz              | ... wird vor Punkt-Cleanup geschützt und danach wiederhergestellt |
-| Leerzeichen vor Satzzeichen  | Wort .                                                            | Wort.           |
-| Leerzeichen nach Satzzeichen | Wort.Wort                                                         | Wort. Wort      |
-| Whitespace                   | Mehrere Leerzeichen -> eins                                       |
-| Trim                         | Leerzeichen am Anfang/Ende entfernen                              |
+| Category                 | Example                                                        | Result       |
+| ------------------------ | -------------------------------------------------------------- | ------------ |
+| Trailing ellipsis        | Text...                                                        | Text         |
+| Comma before ? / !       | ,?                                                             | ?            |
+| Period after ? / !       | ?.                                                             | ?            |
+| Period + comma           | ., or ,.                                                       | .            |
+| Special char + period    | \_. or -.                                                      | \_ or -      |
+| Duplicate characters     | !! or ?? or ::                                                 | ! or ? or :  |
+| Double periods           | ..                                                             | .            |
+| Ellipsis protection      | ... is protected before period cleanup and restored afterwards |
+| Space before punctuation | Word .                                                         | Word.        |
+| Space after punctuation  | Word.Word                                                      | Word. Word   |
+| Whitespace               | Multiple spaces                                                | Single space |
+| Trim                     | Leading/trailing whitespace removed                            |
 
-## Funktionsweise
+## How it works
 
-Mix aus **Regex-Regeln** und **Function-Regeln** (normalize_whitespace, trim).
+Mix of **regex rules** and **function rules** (normalize_whitespace, trim).
 
-**Prioritäten:**
+**Priorities:**
 
-- 200: Trailing Ellipsis entfernen (Speech-to-Text Artefakt)
-- 15: Satzzeichen-Konflikte auflösen
-- 10: Doppelte Satzzeichen konsolidieren
-- 5: Leerzeichen vor Satzzeichen entfernen
-- 4: Leerzeichen nach Satzzeichen sicherstellen
-- 3-1: Ellipsis-Schutz (schützen -> doppelte Punkte entfernen -> wiederherstellen)
-- 0: Whitespace normalisieren
+- 200: Remove trailing ellipsis (speech-to-text artifact)
+- 15: Resolve punctuation conflicts
+- 10: Consolidate duplicate punctuation
+- 5: Remove space before punctuation
+- 4: Ensure space after punctuation
+- 3-1: Ellipsis protection (protect -> remove double periods -> restore)
+- 0: Normalize whitespace
 - -1: Trim
 
-## Aktivierung
+## Activation
 
-In `config.json` unter `rules_paths` eintragen:
+Add to `rules_paths` in `config.json`:
 
 ```json
 {

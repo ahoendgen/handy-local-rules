@@ -1,44 +1,44 @@
-# Satzzeichen (de/satzzeichen.json)
+# Punctuation (de/satzzeichen.json)
 
-Wandelt gesprochene deutsche Satzzeichen-Wörter in die entsprechenden Symbole um.
+Converts spoken German punctuation words into their corresponding symbols.
 
-## Beispiele
+## Examples
 
-| Eingabe           | Ausgabe |
-| ----------------- | ------- |
-| Punkt             | .       |
-| Komma             | ,       |
-| Fragezeichen      | ?       |
-| Ausrufezeichen    | !       |
-| Klammer auf       | (       |
-| Eckige Klammer zu | ]       |
-| Anführungszeichen | "       |
-| Schrägstrich      | /       |
-| Klammeraffe       | @       |
-| Neue Zeile        | \n      |
+| Input             | Output |
+| ----------------- | ------ |
+| Punkt             | .      |
+| Komma             | ,      |
+| Fragezeichen      | ?      |
+| Ausrufezeichen    | !      |
+| Klammer auf       | (      |
+| Eckige Klammer zu | ]      |
+| Anführungszeichen | "      |
+| Schrägstrich      | /      |
+| Klammeraffe       | @      |
+| Neue Zeile        | \n     |
 
-## Regeln (28 Stück)
+## Rules (28 total)
 
-| Kategorie     | Wörter                                                                                  |
-| ------------- | --------------------------------------------------------------------------------------- |
-| Satzzeichen   | Punkt, Komma, Fragezeichen, Ausrufezeichen, Doppelpunkt, Semikolon/Strichpunkt          |
-| Klammern      | Klammer auf/zu, Eckige Klammer auf/zu, Geschweifte Klammer auf/zu                       |
-| Anführung     | Anführungszeichen                                                                       |
-| Striche       | Bindestrich, Gedankenstrich                                                             |
-| Sonderzeichen | Schrägstrich, Backslash, At-Zeichen/Klammeraffe, Unterstrich, Sternchen, Raute/Hashtag  |
-| Symbole       | Und-Zeichen/Kaufmanns-Und, Prozent, Euro, Dollar                                        |
-| Formatierung  | Neue Zeile, Neuer Absatz                                                                |
-| Cleanup       | Auslassungspunkte (drei Punkte/Punkt Punkt Punkt), redundantes "Punkt" nach Satzzeichen |
+| Category      | Words                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------- |
+| Punctuation   | Punkt, Komma, Fragezeichen, Ausrufezeichen, Doppelpunkt, Semikolon/Strichpunkt         |
+| Brackets      | Klammer auf/zu, Eckige Klammer auf/zu, Geschweifte Klammer auf/zu                      |
+| Quotation     | Anführungszeichen                                                                      |
+| Dashes        | Bindestrich, Gedankenstrich                                                            |
+| Special chars | Schrägstrich, Backslash, At-Zeichen/Klammeraffe, Unterstrich, Sternchen, Raute/Hashtag |
+| Symbols       | Und-Zeichen/Kaufmanns-Und, Prozent, Euro, Dollar                                       |
+| Formatting    | Neue Zeile, Neuer Absatz                                                               |
+| Cleanup       | Auslassungspunkte (drei Punkte/Punkt Punkt Punkt), redundant "Punkt" after punctuation |
 
-## Funktionsweise
+## How it works
 
-Reine **Regex-Regeln** mit Wortgrenzen (`\b`) und case-insensitive Matching. Unterstützt Umlaut-Alternativen (ü/ue, ä/ae).
+Pure **regex rules** with word boundaries (`\b`) and case-insensitive matching. Supports umlaut alternatives (ü/ue, ä/ae).
 
-**Priorität 100-110** — Klammern und Auslassungspunkte (110) laufen vor einfachen Satzzeichen (100).
+**Priority 100-110** — brackets and ellipsis (110) run before simple punctuation (100).
 
-## Aktivierung
+## Activation
 
-Standardmäßig aktiv. In `config.json` unter `rules_paths` eintragen:
+Active by default. Add to `rules_paths` in `config.json`:
 
 ```json
 {

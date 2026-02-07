@@ -1,10 +1,10 @@
-# Zahlen (de/zahlen.json)
+# Numbers (de/zahlen.json)
 
-Wandelt gesprochene deutsche Zahlwörter in Ziffern um.
+Converts spoken German number words into their digit equivalents.
 
-## Beispiele
+## Examples
 
-| Eingabe                               | Ausgabe          |
+| Input                                 | Output           |
 | ------------------------------------- | ---------------- |
 | dreiunddreißig                        | 33               |
 | neunundneunzig Luftballons            | 99 Luftballons   |
@@ -13,23 +13,23 @@ Wandelt gesprochene deutsche Zahlwörter in Ziffern um.
 | eintausenddreihundertsiebenunddreißig | 1337             |
 | Äpfel und Birnen                      | Äpfel und Birnen |
 
-## Funktionsweise
+## How it works
 
-Nutzt eine **Shell-Rule** mit der Python-Bibliothek [text2num](https://github.com/allo-media/text2num), die beliebig große deutsche Zahlen erkennt und umwandelt (inkl. Dezimalzahlen mit "Komma").
+Uses a **shell rule** with the Python library [text2num](https://github.com/allo-media/text2num), which recognizes and converts arbitrarily large German numbers (including decimals with "Komma").
 
-**Priorität 105** — läuft vor den Satzzeichen-Regeln (100), damit "Komma" als Dezimaltrennzeichen erkannt wird, bevor es zu "," umgewandelt wird.
+**Priority 105** — runs before punctuation rules (100) so that "Komma" is recognized as a decimal separator before being converted to ",".
 
-## Voraussetzungen
+## Prerequisites
 
-1. **Python 3.13** (oder <=3.13) muss installiert sein
-2. **text2num** in einem venv installiert:
+1. **Python 3.13** (or <=3.13) must be installed
+2. **text2num** installed in a venv:
 
 ```bash
 /opt/homebrew/bin/python3.13 -m venv ~/.handy-local-rules/venv
 ~/.handy-local-rules/venv/bin/pip install text2num
 ```
 
-3. **Shell-Rules** müssen in der `config.json` aktiviert sein:
+3. **Shell rules** must be enabled in `config.json`:
 
 ```json
 {
@@ -37,8 +37,8 @@ Nutzt eine **Shell-Rule** mit der Python-Bibliothek [text2num](https://github.co
 }
 ```
 
-## Hinweise
+## Notes
 
-- Standalone-Wörter wie "eins" oder "null" werden nur im Kontext umgewandelt (z.B. "null Komma fünf" -> "0,5"), nicht isoliert
-- "und" wird korrekt als Konjunktion belassen (kein false positive)
-- Latenz: ~26ms pro Transformation
+- Standalone words like "eins" or "null" are only converted in context (e.g. "null Komma fünf" -> "0,5"), not in isolation
+- "und" is correctly left as a conjunction (no false positives)
+- Latency: ~26ms per transformation

@@ -1,25 +1,25 @@
-# Dev-Kommandos (dev-kommandos/git.json)
+# Dev Commands (dev-kommandos/git.json)
 
-Voice-Trigger für Entwickler-Befehle. Erkennt gesprochene Kurzkommandos und wandelt sie in Befehle um.
+Voice triggers for developer commands. Recognizes spoken shortcuts and converts them into commands.
 
-## Kommandos
+## Commands
 
-| Spracheingabe | Ausgabe         | Beschreibung                   |
-| ------------- | --------------- | ------------------------------ |
-| AC / A C      | add and commit  | Git add & commit               |
-| SAC / S A C   | /add-and-commit | Slash-Command für add & commit |
-| Käsekuchen    | /add-and-commit | Voice-Trigger (Codewort)       |
-| Streichholz   | cy              | Voice-Trigger (Codewort)       |
+| Voice input | Output          | Description                    |
+| ----------- | --------------- | ------------------------------ |
+| AC / A C    | add and commit  | Git add & commit               |
+| SAC / S A C | /add-and-commit | Slash command for add & commit |
+| Käsekuchen  | /add-and-commit | Voice trigger (code word)      |
+| Streichholz | cy              | Voice trigger (code word)      |
 
-## Funktionsweise
+## How it works
 
-**Regex-Regeln** mit `stop_on_match: true` — wenn ein Kommando erkannt wird, stoppt die weitere Regelverarbeitung. Die Eingabe muss exakt dem Muster entsprechen (Anker `^...$`), damit normaler Text nicht versehentlich umgewandelt wird.
+**Regex rules** with `stop_on_match: true` — when a command is recognized, further rule processing stops. The input must exactly match the pattern (anchors `^...$`) so that normal text is not accidentally transformed.
 
-**Priorität 200-300** — höchste Priorität, wird vor allen anderen Regeln geprüft.
+**Priority 200-300** — highest priority, checked before all other rules.
 
-## Aktivierung
+## Activation
 
-In `config.json` unter `rules_paths` eintragen:
+Add to `rules_paths` in `config.json`:
 
 ```json
 {
