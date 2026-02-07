@@ -1,0 +1,11 @@
+[
+  {
+    "id": "de-zahlen",
+    "description": "Gesprochene Zahlen in Ziffern umwandeln (text2num)",
+    "type": "shell",
+    "pattern": "~/.handy-local-rules/venv/bin/python3 -c \"import sys; from text_to_num import alpha2digit; print(alpha2digit(sys.stdin.read().strip(), 'de'))\"",
+    "priority": 105,
+    "timeout_ms": 5000,
+    "enabled": true
+  }
+]

@@ -3,8 +3,11 @@
   "port": 61234,
   "rules_paths": [
     "rules/de/satzzeichen.json",
+    "rules/de/woerter.json",
+    "rules/de/zahlen.json",
     "rules/general/cleanup.json",
     "rules/dev-kommandos/git.json"
   ],
-  "log_level": "info"
+  "log_level": "info",
+  "enable_shell_rules": true
 }
