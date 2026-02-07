@@ -223,9 +223,11 @@ chore: maintenance
 
 !`tree rules/`
 
-- `de/` — German language rules (Satzzeichen, etc.)
-- `dev-kommandos/` — Developer commands (Git shortcuts, etc.)
+- `de/` — German language rules (Satzzeichen, Wörter, Zahlen)
+- `dev-kommandos/` — Developer commands (Git shortcuts, Voice-Trigger)
 - `general/` — General cleanup rules
+
+Each rules directory contains a `*.README.md` file documenting the rules, their purpose, and activation instructions.
 
 ## API Endpoints
 
